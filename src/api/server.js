@@ -1,9 +1,10 @@
 // src/api/server.js
 const express = require('express');
-const path = require('path');
-const db = require('../db');
+const path    = require('path');
+const db      = require('../db');
 const { analyzeSymbol } = require('../signals/runner');
-const config = require('../config');
+const { getLivePrices } = require('../signals/outcome');
+const config  = require('../config');
 
 const app = express();
 app.use(express.json());
@@ -11,7 +12,10 @@ app.use(express.static(path.join(__dirname, '../../public')));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
-// Paginated signals
+app.get('/api/live', (req, res) => {
+  res.json({ ok: true, data: getLivePrices() });
+});
+
 app.get('/api/signals', async (req, res) => {
   try {
     const limit  = Math.min(parseInt(req.query.limit  || '100'), 500);
@@ -26,33 +30,25 @@ app.get('/api/signals', async (req, res) => {
   }
 });
 
-// CSV export
 app.get('/api/signals/export', async (req, res) => {
   try {
     const rows = await db.getAllSignals();
     const header = 'Sinyal ID,Coin,Yön,Giriş Fiyatı,Stop Loss,Take Profit,Sonuç,Kar/Zarar %,Kapanış Fiyatı,Tarih\n';
     const csv = rows.map(r => [
-      r.signal_id,
-      r.symbol,
-      r.direction,
-      r.entry_price,
-      r.sl_price || '',
-      r.tp_price || '',
-      r.outcome,
+      r.signal_id, r.symbol, r.direction, r.entry_price,
+      r.sl_price || '', r.tp_price || '', r.outcome,
       r.pnl_pct != null ? r.pnl_pct + '%' : '',
       r.close_price || '',
       new Date(r.created_at).toLocaleString('tr-TR', { timeZone: 'Asia/Dubai' }),
     ].join(',')).join('\n');
-
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="signals_${Date.now()}.csv"`);
-    res.send('\uFEFF' + header + csv); // BOM for Excel UTF-8
+    res.send('\uFEFF' + header + csv);
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// Anlık analiz
 app.get('/api/analyze/:symbol', async (req, res) => {
   const symbol = decodeURIComponent(req.params.symbol).toUpperCase();
   if (!config.symbols.includes(symbol))
