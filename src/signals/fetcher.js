@@ -1,4 +1,4 @@
-// src/signals/fetcher.js — Bybit FUTURES (linear perpetual)
+// src/signals/fetcher.js — Tüm veri Binance USDT-M Futures
 const ccxt = require('ccxt');
 const config = require('../config');
 
@@ -6,11 +6,9 @@ let exchange;
 
 function getExchange() {
   if (!exchange) {
-    exchange = new ccxt.bybit({
-      apiKey: config.exchange.apiKey,
-      secret: config.exchange.secret,
+    exchange = new ccxt.binance({
       enableRateLimit: true,
-      options: { defaultType: 'linear' }, // FUTURES (USDT perpetual)
+      options: { defaultType: 'future' }, // USDT-M Futures
     });
   }
   return exchange;
@@ -25,33 +23,36 @@ async function fetchOHLCV(symbol, timeframe, limit) {
 }
 
 async function fetchTicker(symbol) {
-  const ex = getExchange();
-  const ticker = await ex.fetchTicker(symbol);
-  return {
-    price:     ticker.last,
-    change24h: ticker.percentage,
-    volume24h: ticker.quoteVolume,
-  };
+  try {
+    // Binance USDT-M Futures fiyatı
+    const pair = symbol.replace('/', '');
+    const res  = await fetch(`https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${pair}`);
+    const json = await res.json();
+    return {
+      price:     parseFloat(json.lastPrice),
+      change24h: parseFloat(json.priceChangePercent),
+      volume24h: parseFloat(json.quoteVolume),
+    };
+  } catch (err) {
+    // Fallback: CCXT
+    const ex = getExchange();
+    const ticker = await ex.fetchTicker(symbol);
+    return {
+      price:     ticker.last,
+      change24h: ticker.percentage,
+      volume24h: ticker.quoteVolume,
+    };
+  }
 }
 
 async function fetchFearGreed() {
   try {
-    const res = await fetch('https://api.alternative.me/fng/?limit=1');
+    const res  = await fetch('https://api.alternative.me/fng/?limit=1');
     const json = await res.json();
     return parseInt(json.data[0].value);
   } catch {
     return 50;
   }
 }
-async function testBinance() {
-  try {
-    const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SANDUSDT');
-    const json = await res.json();
-    console.log('[Test] Binance erişim:', json);
-  } catch (err) {
-    console.error('[Test] Binance erişim HATASI:', err.message);
-  }
-}
-testBinance();
 
 module.exports = { fetchOHLCV, fetchTicker, fetchFearGreed };
