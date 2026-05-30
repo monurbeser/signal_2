@@ -1,11 +1,18 @@
-// src/signals/outcome.js — Açık sinyallerin TP/SL takibi
+// src/signals/outcome.js
 const { fetchTicker } = require('./fetcher');
 const db = require('../db');
 
-/**
- * Her 2 dakikada bir açık sinyalleri kontrol eder.
- * TP → WIN, SL → LOSS, 24s geçti → EXPIRED
- */
+const livePrices = new Map();
+
+function calcPnL(signal, currentPrice) {
+  const entry = parseFloat(signal.entry_price);
+  const lev   = signal.leverage || 1;
+  const pct   = signal.direction === 'LONG'
+    ? ((currentPrice - entry) / entry) * 100 * lev
+    : ((entry - currentPrice) / entry) * 100 * lev;
+  return parseFloat(pct.toFixed(2));
+}
+
 async function checkOutcomes() {
   let openSignals;
   try {
@@ -16,73 +23,61 @@ async function checkOutcomes() {
   }
 
   if (!openSignals.length) return;
-  console.log(`[Outcome] ${openSignals.length} açık sinyal kontrol ediliyor...`);
 
   for (const signal of openSignals) {
     try {
-      const now = Date.now();
-      const age = (now - new Date(signal.created_at).getTime()) / 1000 / 3600; // saat
-
-      // 24 saat geçtiyse expire et
-      if (age >= 24) {
-        const ticker = await fetchTicker(signal.symbol);
-        const closePrice = ticker.price;
-        const pnl = calcPnL(signal, closePrice);
-        await db.closeSignal(signal.id, 'EXPIRED', closePrice, pnl);
-        console.log(`  ⏰ EXPIRED: ${signal.signal_id} ${signal.symbol} PnL: ${pnl}%`);
-        continue;
-      }
-
-      if (!signal.tp_price && !signal.sl_price) continue;
-
       const ticker = await fetchTicker(signal.symbol);
-      const price = parseFloat(ticker.price);
+      const price  = parseFloat(ticker.price);
+      const pnl    = calcPnL(signal, price);
+      const age    = (Date.now() - new Date(signal.created_at).getTime()) / 3600000;
+
+      livePrices.set(signal.id, {
+        symbol:     signal.symbol,
+        signalId:   signal.signal_id,
+        direction:  signal.direction,
+        entryPrice: parseFloat(signal.entry_price),
+        tpPrice:    parseFloat(signal.tp_price),
+        slPrice:    parseFloat(signal.sl_price),
+        leverage:   signal.leverage,
+        price,
+        pnlPct:     pnl,
+        updatedAt:  new Date(),
+      });
+
       const tp = parseFloat(signal.tp_price);
       const sl = parseFloat(signal.sl_price);
+      let outcome = null;
 
-      if (signal.direction === 'LONG') {
-        if (price >= tp) {
-          const pnl = calcPnL(signal, price);
-          await db.closeSignal(signal.id, 'WIN', price, pnl);
-          console.log(`  ✅ WIN: ${signal.signal_id} ${signal.symbol} @ ${price} PnL: +${pnl}%`);
-        } else if (price <= sl) {
-          const pnl = calcPnL(signal, price);
-          await db.closeSignal(signal.id, 'LOSS', price, pnl);
-          console.log(`  ❌ LOSS: ${signal.signal_id} ${signal.symbol} @ ${price} PnL: ${pnl}%`);
-        }
+      if (age >= 24) {
+        outcome = 'EXPIRED';
+      } else if (signal.direction === 'LONG') {
+        if (price >= tp) outcome = 'WIN';
+        else if (price <= sl) outcome = 'LOSS';
       } else if (signal.direction === 'SHORT') {
-        if (price <= tp) {
-          const pnl = calcPnL(signal, price);
-          await db.closeSignal(signal.id, 'WIN', price, pnl);
-          console.log(`  ✅ WIN: ${signal.signal_id} ${signal.symbol} @ ${price} PnL: +${pnl}%`);
-        } else if (price >= sl) {
-          const pnl = calcPnL(signal, price);
-          await db.closeSignal(signal.id, 'LOSS', price, pnl);
-          console.log(`  ❌ LOSS: ${signal.signal_id} ${signal.symbol} @ ${price} PnL: ${pnl}%`);
-        }
+        if (price <= tp) outcome = 'WIN';
+        else if (price >= sl) outcome = 'LOSS';
+      }
+
+      if (outcome) {
+        await db.closeSignal(signal.id, outcome, price, pnl);
+        livePrices.delete(signal.id);
+        const icon = outcome === 'WIN' ? '✅' : outcome === 'LOSS' ? '❌' : '⏰';
+        console.log(`[Outcome] ${icon} ${outcome}: ${signal.signal_id} ${signal.symbol} @ ${price} | PnL: ${pnl > 0 ? '+' : ''}${pnl}%`);
       }
     } catch (err) {
-      console.error(`  [Outcome] ${signal.symbol} hata:`, err.message);
+      console.error(`[Outcome] ${signal.symbol} hata:`, err.message);
     }
   }
 }
 
-function calcPnL(signal, closePrice) {
-  const entry = parseFloat(signal.entry_price);
-  const lev = signal.leverage || 1;
-  let pct;
-  if (signal.direction === 'LONG') {
-    pct = ((closePrice - entry) / entry) * 100 * lev;
-  } else {
-    pct = ((entry - closePrice) / entry) * 100 * lev;
-  }
-  return parseFloat(pct.toFixed(2));
+function getLivePrices() {
+  return Array.from(livePrices.values());
 }
 
 function start() {
-  console.log('[Outcome] Tracker başlatıldı — her 2 dakikada kontrol');
-  checkOutcomes(); // ilk kontrol
-  setInterval(checkOutcomes, 2 * 60 * 1000);
+  console.log('[Outcome] Tracker başlatıldı — her 30 saniyede güncelleniyor');
+  checkOutcomes();
+  setInterval(checkOutcomes, 30_000);
 }
 
-module.exports = { start, checkOutcomes };
+module.exports = { start, checkOutcomes, getLivePrices };
