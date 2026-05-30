@@ -1,9 +1,13 @@
-// src/signals/engine.js — Futures signal engine with TP/SL/Leverage
+// src/signals/engine.js
 const config = require('../config');
 const { weights, thresholds } = config;
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function scoreRSI(rsi) {
-  if (rsi === null) return 0;
+  if (rsi === null || rsi === undefined) return 0;
   if (rsi <= 20) return 1.0;
   if (rsi <= 32) return 0.80;
   if (rsi <= 42) return 0.45;
@@ -14,19 +18,19 @@ function scoreRSI(rsi) {
 }
 
 function scoreMACD(histogram) {
-  if (histogram === null) return 0;
-  if (histogram >= 2)    return 1.0;
-  if (histogram >= 0.5)  return 0.7;
-  if (histogram >= 0.1)  return 0.3;
+  if (histogram === null || histogram === undefined) return 0;
+  if (histogram >= 2) return 1.0;
+  if (histogram >= 0.5) return 0.7;
+  if (histogram >= 0.1) return 0.3;
   if (histogram >= -0.1) return 0.0;
   if (histogram >= -0.5) return -0.3;
-  if (histogram >= -2)   return -0.7;
+  if (histogram >= -2) return -0.7;
   return -1.0;
 }
 
 function scoreBB(bbPos) {
-  if (bbPos === null) return 0;
-  if (bbPos <= 5)  return 1.0;
+  if (bbPos === null || bbPos === undefined) return 0;
+  if (bbPos <= 5) return 1.0;
   if (bbPos <= 15) return 0.8;
   if (bbPos <= 25) return 0.5;
   if (bbPos <= 45) return 0.1;
@@ -37,7 +41,7 @@ function scoreBB(bbPos) {
 }
 
 function scoreFearGreed(fg) {
-  if (fg === null) return 0;
+  if (fg === null || fg === undefined) return 0;
   if (fg <= 10) return 1.0;
   if (fg <= 25) return 0.7;
   if (fg <= 40) return 0.3;
@@ -48,16 +52,17 @@ function scoreFearGreed(fg) {
 }
 
 function scoreVolume(volChange) {
+  if (volChange === null || volChange === undefined) return 0;
   if (volChange >= 150) return 1.0;
-  if (volChange >= 80)  return 0.8;
-  if (volChange >= 40)  return 0.6;
-  if (volChange >= 20)  return 0.4;
-  if (volChange >= 0)   return 0.1;
+  if (volChange >= 80) return 0.8;
+  if (volChange >= 40) return 0.6;
+  if (volChange >= 20) return 0.4;
+  if (volChange >= 0) return 0.1;
   return -0.2;
 }
 
 function scoreStochRSI(stoch) {
-  if (!stoch) return 0;
+  if (!stoch || stoch.k === null || stoch.k === undefined) return 0;
   const k = stoch.k;
   if (k <= 10) return 1.0;
   if (k <= 20) return 0.7;
@@ -68,102 +73,196 @@ function scoreStochRSI(stoch) {
   return -1.0;
 }
 
-/**
- * Güven skoruna göre kaldıraç hesapla
- */
-function calcLeverage(confidence, direction) {
-  const table = config.leverage;
-  // LONG için yüksek confidence, SHORT için düşük (ters)
-  const adjustedConf = direction === 'LONG' ? confidence : 100 - confidence;
-  for (const row of table) {
-    if (adjustedConf >= row.minConf) return row.lev;
-  }
-  return 5; // default
+function calcSignalPower(confidence, direction) {
+  if (direction === 'LONG') return confidence;
+  if (direction === 'SHORT') return 100 - confidence;
+  return 0;
 }
 
-/**
- * TP / SL fiyat hedefleri
- */
-function calcTPSL(price, direction, leverage) {
-  const { tpPct, slPct } = config.tpsl;
-  // Kaldıraç arttıkça TP/SL biraz daralır (risk yönetimi)
-  const adjTp = tpPct * (1 - (leverage - 5) * 0.005);
-  const adjSl = slPct * (1 + (leverage - 5) * 0.003);
+function calcAtrStops(price, direction, atrPct) {
+  const atrCfg = config.atr;
+
+  const rawSlPct = atrPct * atrCfg.slMult;
+  const slPct = clamp(rawSlPct, atrCfg.minSlPct, atrCfg.maxSlPct);
+  const tpPct = slPct * (atrCfg.tpMult / atrCfg.slMult);
 
   if (direction === 'LONG') {
     return {
-      tp: +(price * (1 + adjTp)).toFixed(6),
-      sl: +(price * (1 - adjSl)).toFixed(6),
-      tpPct: +(adjTp * 100).toFixed(2),
-      slPct: +(adjSl * 100).toFixed(2),
-      estimatedPnlPct: +(adjTp * leverage * 100).toFixed(1),
-    };
-  } else {
-    return {
-      tp: +(price * (1 - adjTp)).toFixed(6),
-      sl: +(price * (1 + adjSl)).toFixed(6),
-      tpPct: +(adjTp * 100).toFixed(2),
-      slPct: +(adjSl * 100).toFixed(2),
-      estimatedPnlPct: +(adjTp * leverage * 100).toFixed(1),
+      tp: +(price * (1 + tpPct)).toFixed(8),
+      sl: +(price * (1 - slPct)).toFixed(8),
+      tpPct: +(tpPct * 100).toFixed(3),
+      slPct: +(slPct * 100).toFixed(3),
     };
   }
+
+  if (direction === 'SHORT') {
+    return {
+      tp: +(price * (1 - tpPct)).toFixed(8),
+      sl: +(price * (1 + slPct)).toFixed(8),
+      tpPct: +(tpPct * 100).toFixed(3),
+      slPct: +(slPct * 100).toFixed(3),
+    };
+  }
+
+  return null;
 }
 
-function evaluate({ rsi, macd, bbPos, fearGreed, volChange, stoch, price }) {
-  const scores = {
-    rsi:       scoreRSI(rsi)              * weights.rsi,
-    macd:      scoreMACD(macd)            * weights.macd,
-    bb:        scoreBB(bbPos)             * weights.bb,
-    fearGreed: scoreFearGreed(fearGreed)  * weights.fearGreed,
-    volume:    scoreVolume(volChange)     * weights.volume,
-    stoch:     scoreStochRSI(stoch)       * weights.stoch,
+function calcRiskBasedLeverage({ symbol, group, signalPower, stopPct }) {
+  const maxLev = config.risk.maxLeverageByGroup[group] || config.risk.maxLeverageByGroup.OTHER || 1;
+
+  if (!stopPct || stopPct <= 0) {
+    return {
+      leverage: 1,
+      positionNotionalPct: config.risk.accountRiskPct,
+      accountRiskPct: config.risk.accountRiskPct,
+    };
+  }
+
+  const baseNotional = config.risk.accountRiskPct / stopPct;
+
+  let qualityMultiplier = 1;
+  if (signalPower >= 90) qualityMultiplier = 1.15;
+  else if (signalPower >= 80) qualityMultiplier = 1.05;
+  else if (signalPower < 75) qualityMultiplier = 0.85;
+
+  const positionNotionalPct = Math.min(baseNotional * qualityMultiplier, maxLev);
+  const leverage = +positionNotionalPct.toFixed(2);
+
+  return {
+    leverage,
+    positionNotionalPct: +positionNotionalPct.toFixed(4),
+    accountRiskPct: config.risk.accountRiskPct,
+  };
+}
+
+function applyBtcRegime(direction, signalPower, marketContext) {
+  if (!config.regime.enabled || !marketContext || !marketContext.btcRegime) {
+    return { allowed: true, reason: 'BTC rejim filtresi kapalı veya veri yok' };
+  }
+
+  const regime = marketContext.btcRegime;
+
+  if (regime === 'BULL' && direction === 'LONG') {
+    return { allowed: true, reason: 'BTC rejimi yukarı, LONG uyumlu' };
+  }
+
+  if (regime === 'BEAR' && direction === 'SHORT') {
+    return { allowed: true, reason: 'BTC rejimi aşağı, SHORT uyumlu' };
+  }
+
+  if (signalPower >= config.regime.counterTrendMinPower) {
+    return { allowed: true, reason: 'Ters rejim ama sinyal gücü yüksek' };
+  }
+
+  return { allowed: false, reason: `BTC rejimi ${regime}, ters yönde sinyal gücü yetersiz` };
+}
+
+function evaluate({ symbol, group, rsi, macd, bbPos, fearGreed, volChange, stoch, price, atr, atrPct, marketContext }) {
+  const weightedScores = {
+    rsi: scoreRSI(rsi) * weights.rsi,
+    macd: scoreMACD(macd) * weights.macd,
+    bb: scoreBB(bbPos) * weights.bb,
+    fearGreed: scoreFearGreed(fearGreed) * weights.fearGreed,
+    volume: scoreVolume(volChange) * weights.volume,
+    stoch: scoreStochRSI(stoch) * weights.stoch,
   };
 
   const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
-  const raw = Object.values(scores).reduce((a, b) => a + b, 0) / totalWeight;
+  const raw = Object.values(weightedScores).reduce((a, b) => a + b, 0) / totalWeight;
   const confidence = Math.round(((raw + 1) / 2) * 100);
 
-  let direction;
-  if (confidence >= config.signal.longThreshold)  direction = 'LONG';
+  let direction = 'HOLD';
+  if (confidence >= config.signal.longThreshold) direction = 'LONG';
   else if (confidence <= config.signal.shortThreshold) direction = 'SHORT';
-  else direction = 'HOLD';
 
-  let leverage = null;
+  const signalPower = calcSignalPower(confidence, direction);
+
   let tpsl = null;
+  let leverage = null;
+  let risk = null;
+  let regime = { allowed: true, reason: 'HOLD' };
 
-  if (direction !== 'HOLD' && price) {
-    leverage = calcLeverage(confidence, direction);
-    tpsl = calcTPSL(price, direction, leverage);
+  if (direction !== 'HOLD' && price && atrPct) {
+    regime = applyBtcRegime(direction, signalPower, marketContext);
+
+    tpsl = calcAtrStops(price, direction, atrPct);
+    const stopPct = tpsl ? tpsl.slPct / 100 : null;
+
+    risk = calcRiskBasedLeverage({
+      symbol,
+      group,
+      signalPower,
+      stopPct,
+    });
+
+    leverage = risk.leverage;
+
+    if (tpsl && leverage) {
+      tpsl.estimatedPnlPct = +(tpsl.tpPct * leverage).toFixed(2);
+      tpsl.estimatedLossPct = +(tpsl.slPct * leverage).toFixed(2);
+    }
   }
 
-  const reasons = buildReasons({ rsi, macd, bbPos, fearGreed, volChange, stoch });
+  const reasons = buildReasons({ rsi, macd, bbPos, fearGreed, volChange, stoch, atrPct, marketContext, regime });
 
-  return { direction, confidence, leverage, tpsl, reasons };
+  return {
+    direction,
+    confidence,
+    signalPower,
+    leverage,
+    tpsl,
+    risk,
+    regime,
+    reasons,
+    rawScores: weightedScores,
+  };
 }
 
-function buildReasons({ rsi, macd, bbPos, fearGreed, volChange, stoch }) {
+function buildReasons({ rsi, macd, bbPos, fearGreed, volChange, stoch, atrPct, marketContext, regime }) {
   const r = [];
-  if (rsi !== null) {
-    if (rsi < thresholds.rsi.oversold)       r.push(`RSI ${rsi.toFixed(1)} — aşırı satım`);
-    else if (rsi > thresholds.rsi.overbought) r.push(`RSI ${rsi.toFixed(1)} — aşırı alım`);
-    else                                      r.push(`RSI ${rsi.toFixed(1)} — nötr`);
+
+  if (rsi !== null && rsi !== undefined) {
+    if (rsi < thresholds.rsi.oversold) r.push(`RSI ${rsi.toFixed(1)} aşırı satım`);
+    else if (rsi > thresholds.rsi.overbought) r.push(`RSI ${rsi.toFixed(1)} aşırı alım`);
+    else r.push(`RSI ${rsi.toFixed(1)} nötr`);
   }
-  if (macd !== null)
-    r.push(`MACD ${macd >= 0 ? '+' : ''}${macd.toFixed(4)} — ${macd > 0 ? '⬆ yukarı' : '⬇ aşağı'}`);
-  if (bbPos !== null) {
-    if (bbPos < thresholds.bb.lower)       r.push(`BB %${bbPos} — alt banda yakın`);
-    else if (bbPos > thresholds.bb.upper)  r.push(`BB %${bbPos} — üst banda yakın`);
-    else                                   r.push(`BB %${bbPos} — orta bölge`);
+
+  if (macd !== null && macd !== undefined) {
+    r.push(`MACD ${macd >= 0 ? '+' : ''}${macd.toFixed(4)} ${macd > 0 ? 'yukarı momentum' : 'aşağı momentum'}`);
   }
-  if (stoch)
-    r.push(`StochRSI K:${stoch.k?.toFixed(1)} D:${stoch.d?.toFixed(1)}`);
-  if (fearGreed !== null) {
+
+  if (bbPos !== null && bbPos !== undefined) {
+    if (bbPos < thresholds.bb.lower) r.push(`BB yüzde ${bbPos} alt banda yakın`);
+    else if (bbPos > thresholds.bb.upper) r.push(`BB yüzde ${bbPos} üst banda yakın`);
+    else r.push(`BB yüzde ${bbPos} orta bölge`);
+  }
+
+  if (stoch) {
+    r.push(`StochRSI K ${stoch.k?.toFixed(1)} D ${stoch.d?.toFixed(1)}`);
+  }
+
+  if (fearGreed !== null && fearGreed !== undefined) {
     const lbl = fearGreed < 25 ? 'aşırı korku' : fearGreed > 75 ? 'açgözlülük' : 'nötr';
-    r.push(`F&G ${fearGreed} — ${lbl}`);
+    r.push(`Fear Greed ${fearGreed} ${lbl}`);
   }
-  if (volChange !== null)
+
+  if (volChange !== null && volChange !== undefined) {
     r.push(`Hacim ${volChange >= 0 ? '+' : ''}${volChange}%`);
+  }
+
+  if (atrPct) {
+    r.push(`ATR yüzde ${(atrPct * 100).toFixed(2)}`);
+  }
+
+  if (marketContext?.btcRegime) {
+    r.push(`BTC rejimi ${marketContext.btcRegime}`);
+  }
+
+  if (regime?.reason) {
+    r.push(regime.reason);
+  }
+
   return r;
 }
 
-module.exports = { evaluate };
+module.exports = { evaluate, calcSignalPower };
