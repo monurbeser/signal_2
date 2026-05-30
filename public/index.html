@@ -80,6 +80,51 @@ main{padding:14px 20px;max-width:1600px;margin:0 auto;}
 .ival.bear{color:var(--red);}
 .ival.neut{color:var(--muted);}
 
+/* ── LIVE POSITIONS ── */
+.live-panel{background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:14px;}
+.live-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.live-title{font-family:var(--display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--yellow);box-shadow:0 0 6px var(--yellow);animation:pulse 1.5s ease-in-out infinite;}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;padding:12px;}
+.live-empty{padding:24px;text-align:center;color:var(--muted);font-size:11px;}
+
+.pos-card{background:var(--bg3);border-radius:6px;padding:12px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.pos-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.pos-card.win-track::before{background:var(--green);}
+.pos-card.loss-track::before{background:var(--red);}
+
+.pos-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.pos-sym{font-family:var(--display);font-size:13px;font-weight:700;}
+.pos-sid{font-size:9px;color:var(--muted);}
+.pos-dir{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;}
+.pos-dir.long{background:var(--green-dim);color:var(--green);}
+.pos-dir.short{background:var(--red-dim);color:var(--red);}
+
+.pos-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
+.pp{text-align:center;}
+.pp-lbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.pp-val{font-size:11px;font-weight:500;}
+.pp-val.entry{color:var(--text);}
+.pp-val.cur{color:var(--accent);font-size:13px;font-weight:700;}
+.pp-val.tp{color:var(--green);}
+.pp-val.sl{color:var(--red);}
+
+/* Progress bar between SL and TP */
+.pos-progress{margin-bottom:8px;}
+.prog-labels{display:flex;justify-content:space-between;margin-bottom:3px;}
+.prog-labels span{font-size:8px;color:var(--muted);}
+.prog-bar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;position:relative;}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s,background .5s;}
+.prog-marker{position:absolute;top:-2px;width:2px;height:9px;background:var(--accent);border-radius:1px;transition:left .5s;}
+
+.pos-pnl{display:flex;justify-content:space-between;align-items:center;}
+.pnl-label{font-size:9px;color:var(--muted);}
+.pnl-val{font-size:16px;font-weight:700;font-family:var(--display);}
+.pnl-val.pos{color:var(--green);}
+.pnl-val.neg{color:var(--red);}
+.pnl-lev{font-size:9px;color:var(--accent);margin-left:4px;}
+.upd-time{font-size:8px;color:var(--muted);}
+
 /* SIGNAL TABLE */
 .panel{background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:14px;}
 .ph{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
@@ -88,24 +133,20 @@ main{padding:14px 20px;max-width:1600px;margin:0 auto;}
 .sw{overflow-x:auto;}
 .sw::-webkit-scrollbar{height:3px;}
 .sw::-webkit-scrollbar-thumb{background:var(--border);}
-table{width:100%;border-collapse:collapse;min-width:900px;}
+table{width:100%;border-collapse:collapse;min-width:1000px;}
 th{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);white-space:nowrap;}
 td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;white-space:nowrap;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg3);}
-.sid{color:var(--muted);font-size:10px;font-family:var(--mono);}
+.sid{color:var(--muted);font-size:10px;}
 .tlong{color:var(--green);font-weight:700;}
 .tshort{color:var(--red);font-weight:700;}
 .tm{color:var(--muted);}
-.outcome-win{color:var(--green);}
-.outcome-loss{color:var(--red);}
-.outcome-open{color:var(--yellow);}
-.outcome-expired{color:var(--muted);}
 .pnl-pos{color:var(--green);font-weight:500;}
 .pnl-neg{color:var(--red);font-weight:500;}
+.pnl-live{color:var(--yellow);font-weight:500;animation:pulse 2s ease-in-out infinite;}
 .erow{text-align:center;color:var(--muted);padding:32px!important;}
 
-/* PAGINATION */
 .pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;}
 .pg-info{font-size:10px;color:var(--muted);}
 .pg-btns{display:flex;gap:4px;}
@@ -114,7 +155,6 @@ tr:hover td{background:var(--bg3);}
 .pg-btn:disabled{opacity:.3;cursor:not-allowed;}
 .pg-btn.active{border-color:var(--accent);color:var(--accent);}
 
-/* CHART */
 .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:800px){.bottom-grid{grid-template-columns:1fr;}}
 .chart-wrap{padding:14px;height:200px;}
@@ -133,19 +173,27 @@ tr:hover td{background:var(--bg3);}
   </div>
 </header>
 
-<!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat"><div class="stat-lbl">Toplam Sinyal</div><div class="stat-val b" id="s-total">—</div><div class="stat-sub">kayıt</div></div>
   <div class="stat"><div class="stat-lbl">Win Rate</div><div class="stat-val g" id="s-wr">—</div><div class="stat-sub" id="s-wr-sub">—</div></div>
   <div class="stat"><div class="stat-lbl">Toplam PnL</div><div class="stat-val" id="s-pnl">—</div><div class="stat-sub">kapalı sinyaller</div></div>
-  <div class="stat"><div class="stat-lbl">Açık</div><div class="stat-val y" id="s-open">—</div><div class="stat-sub">bekliyor</div></div>
-  <div class="stat"><div class="stat-lbl">LONG / SHORT</div><div class="stat-val" id="s-ls">—</div><div class="stat-sub">bugünkü sinyaller</div></div>
+  <div class="stat"><div class="stat-lbl">Açık Pozisyon</div><div class="stat-val y" id="s-open">—</div><div class="stat-sub" id="s-open-pnl">anlık K/Z</div></div>
+  <div class="stat"><div class="stat-lbl">LONG / SHORT</div><div class="stat-val" id="s-ls">—</div><div class="stat-sub">bugünkü</div></div>
   <div class="stat"><div class="stat-lbl">Fear & Greed</div><div class="stat-val" id="s-fg">—</div><div class="stat-sub" id="s-fg-lbl">—</div></div>
 </div>
 
 <main>
   <!-- COIN CARDS -->
   <div class="coins-grid" id="coins-grid"></div>
+
+  <!-- LIVE OPEN POSITIONS -->
+  <div class="live-panel">
+    <div class="live-header">
+      <div class="live-title"><div class="live-dot"></div>Açık Pozisyonlar — Canlı Takip</div>
+      <span class="htext" id="live-upd">— saniyede bir güncelleniyor</span>
+    </div>
+    <div id="live-content"><div class="live-empty">Yükleniyor...</div></div>
+  </div>
 
   <!-- SIGNAL TABLE -->
   <div class="panel">
@@ -159,18 +207,12 @@ tr:hover td{background:var(--bg3);}
     <div class="sw">
       <table>
         <thead><tr>
-          <th>Sinyal ID</th>
-          <th>Coin</th>
-          <th>Yön</th>
-          <th>Giriş Fiyatı</th>
-          <th>Stop Loss</th>
-          <th>Take Profit</th>
-          <th>Kaldıraç</th>
-          <th>Sonuç</th>
-          <th>Kar / Zarar</th>
-          <th>Tarih (GG/AA/YYYY SS:DD)</th>
+          <th>Sinyal ID</th><th>Coin</th><th>Yön</th>
+          <th>Giriş Fiyatı</th><th>Stop Loss</th><th>Take Profit</th>
+          <th>Kaldıraç</th><th>Sonuç</th><th>Kar / Zarar</th>
+          <th>Anlık Fiyat</th><th>Tarih (GG/AA/YYYY SS:DD)</th>
         </tr></thead>
-        <tbody id="sig-tbody"><tr><td class="erow" colspan="10">Yükleniyor...</td></tr></tbody>
+        <tbody id="sig-tbody"><tr><td class="erow" colspan="11">Yükleniyor...</td></tr></tbody>
       </table>
     </div>
     <div class="pagination">
@@ -182,7 +224,7 @@ tr:hover td{background:var(--bg3);}
   <!-- CHARTS -->
   <div class="bottom-grid">
     <div class="panel">
-      <div class="ph"><div class="ph-title">Güven Skoru Geçmişi</div><span class="htext">son 30 sinyal</span></div>
+      <div class="ph"><div class="ph-title">Güven Skoru Geçmişi</div><span class="htext">son 30</span></div>
       <div class="chart-wrap"><canvas id="conf-chart"></canvas></div>
     </div>
     <div class="panel">
@@ -199,7 +241,7 @@ const SYMBOLS = [
   'LTC/USDT','BCH/USDT','DOT/USDT','NEAR/USDT','ATOM/USDT',
   'FIL/USDT','ETC/USDT','APT/USDT','ARB/USDT','OP/USDT',
   'SUI/USDT','SEI/USDT','TIA/USDT','INJ/USDT','RUNE/USDT',
-  'WLD/USDT','FET/USDT','RENDER/USDT','TAO/USDT','JUP/USDT',
+  'WLD/USDT','FET/USDT','RENDER/USDT','JUP/USDT',
   '1000PEPE/USDT','WIF/USDT','1000BONK/USDT','1000FLOKI/USDT','1000SHIB/USDT',
   'DOGS/USDT','PNUT/USDT','POPCAT/USDT','MEME/USDT','TURBO/USDT',
   'UNI/USDT','AAVE/USDT','CRV/USDT','DYDX/USDT','GMX/USDT',
@@ -207,12 +249,12 @@ const SYMBOLS = [
 ];
 
 const PAGE_SIZE = 100;
-let currentPage = 0;
-let totalSignals = 0;
+let currentPage = 0, totalSignals = 0;
 let confChart = null, wlChart = null;
+let liveData = []; // açık pozisyonlar
 
 function fmtPrice(p) {
-  if (!p) return '—';
+  if (!p && p !== 0) return '—';
   const n = parseFloat(p);
   if (n < 0.0001) return '$' + n.toFixed(8);
   if (n < 0.01)   return '$' + n.toFixed(6);
@@ -224,25 +266,121 @@ function fmtPrice(p) {
 function fmtTime(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
-  const pad = n => n.toString().padStart(2,'0');
-  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const p = n => n.toString().padStart(2,'0');
+  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-function outcomeHTML(outcome, pnl) {
-  if (!outcome || outcome === 'OPEN') return '<span class="outcome-open">⏳ Açık</span>';
-  if (outcome === 'WIN')  return '✅';
-  if (outcome === 'LOSS') return '❌';
-  if (outcome === 'EXPIRED') return '<span class="outcome-expired">⏰ Süresi doldu</span>';
+function outcomeHTML(outcome) {
+  if (!outcome || outcome === 'OPEN') return '<span style="color:var(--yellow)">⏳ Açık</span>';
+  if (outcome === 'WIN')     return '✅ WIN';
+  if (outcome === 'LOSS')    return '❌ LOSS';
+  if (outcome === 'EXPIRED') return '<span style="color:var(--muted)">⏰ Expired</span>';
   return outcome;
 }
 
-function pnlHTML(pnl) {
+function pnlHTML(pnl, isLive) {
   if (pnl == null) return '<span class="tm">—</span>';
-  const cls = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-  return `<span class="${cls}">${pnl >= 0 ? '+' : ''}${pnl}%</span>`;
+  const cls = isLive ? 'pnl-live' : (pnl >= 0 ? 'pnl-pos' : 'pnl-neg');
+  return `<span class="${cls}">${pnl >= 0 ? '+' : ''}${pnl}%${isLive ? ' ●' : ''}</span>`;
 }
 
-// ─── COIN CARDS ───────────────────────────────────────────────────────────────
+// ── LIVE POSITIONS ─────────────────────────────────────────────────────────
+async function loadLive() {
+  try {
+    const res  = await fetch('/api/live');
+    const json = await res.json();
+    if (!json.ok) return;
+    liveData = json.data;
+    renderLive(liveData);
+    updateOpenStats(liveData);
+    document.getElementById('live-upd').textContent =
+      `${liveData.length} açık • ${new Date().toLocaleTimeString('tr-TR',{timeZone:'Asia/Dubai'})}`;
+  } catch {}
+}
+
+function renderLive(positions) {
+  const el = document.getElementById('live-content');
+  if (!positions.length) {
+    el.innerHTML = '<div class="live-empty">Şu an açık pozisyon yok</div>';
+    return;
+  }
+  const html = '<div class="live-grid">' + positions.map(p => {
+    const pnl     = p.pnlPct;
+    const pnlCls  = pnl >= 0 ? 'pos' : 'neg';
+    const trackCls = pnl >= 0 ? 'win-track' : 'loss-track';
+    const dir     = p.direction.toLowerCase();
+
+    // Progress bar: SL → TP arası fiyat yüzdesi
+    const sl = p.slPrice, tp = p.tpPrice, cur = p.price;
+    const range = tp - sl;
+    let prog = range !== 0 ? ((cur - sl) / range) * 100 : 50;
+    prog = Math.max(0, Math.min(100, prog));
+    if (p.direction === 'SHORT') prog = 100 - prog;
+    const progColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+
+    return `<div class="pos-card ${trackCls}">
+      <div class="pos-top">
+        <div>
+          <div class="pos-sym">${p.symbol.replace('/USDT','')}<span style="font-size:9px;color:var(--muted);font-family:var(--mono);font-weight:400">/USDT</span></div>
+          <div class="pos-sid">#${p.signalId} • ${p.leverage}x</div>
+        </div>
+        <span class="pos-dir ${dir}">${p.direction}</span>
+      </div>
+
+      <div class="pos-prices">
+        <div class="pp"><div class="pp-lbl">Giriş</div><div class="pp-val entry">${fmtPrice(p.entryPrice)}</div></div>
+        <div class="pp"><div class="pp-lbl">Anlık</div><div class="pp-val cur">${fmtPrice(p.price)}</div></div>
+        <div class="pp"><div class="pp-lbl">Hedef</div><div class="pp-val tp">${fmtPrice(p.tpPrice)}</div></div>
+      </div>
+
+      <div class="pos-progress">
+        <div class="prog-labels">
+          <span>SL ${fmtPrice(p.slPrice)}</span>
+          <span>TP ${fmtPrice(p.tpPrice)}</span>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill" style="width:${prog}%;background:${progColor}"></div>
+          <div class="prog-marker" style="left:calc(${prog}% - 1px)"></div>
+        </div>
+      </div>
+
+      <div class="pos-pnl">
+        <div>
+          <div class="pnl-label">Anlık K/Z <span class="pnl-lev">${p.leverage}x</span></div>
+          <div class="pnl-val ${pnlCls}">${pnl >= 0 ? '+' : ''}${pnl}%</div>
+        </div>
+        <div class="upd-time">${new Date(p.updatedAt).toLocaleTimeString('tr-TR',{timeZone:'Asia/Dubai'})}</div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+  el.innerHTML = html;
+}
+
+function updateOpenStats(positions) {
+  const totalLivePnl = positions.reduce((s, p) => s + (p.pnlPct || 0), 0);
+  document.getElementById('s-open').textContent = positions.length;
+  const sub = document.getElementById('s-open-pnl');
+  if (positions.length) {
+    sub.textContent = (totalLivePnl >= 0 ? '+' : '') + totalLivePnl.toFixed(1) + '% toplam';
+    sub.style.color = totalLivePnl >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    sub.textContent = 'açık pozisyon yok';
+    sub.style.color = 'var(--muted)';
+  }
+}
+
+// ── LIVE PNL in TABLE ──────────────────────────────────────────────────────
+function getLivePnl(signalId) {
+  const pos = liveData.find(p => p.signalId === signalId);
+  return pos ? pos.pnlPct : null;
+}
+
+function getLivePrice(signalId) {
+  const pos = liveData.find(p => p.signalId === signalId);
+  return pos ? pos.price : null;
+}
+
+// ── COIN CARDS ─────────────────────────────────────────────────────────────
 function initGrid() {
   const grid = document.getElementById('coins-grid');
   grid.innerHTML = '';
@@ -273,18 +411,16 @@ function initGrid() {
 function updateCard(symbol, data) {
   const card = document.getElementById('card-' + symbol.replace('/', '-'));
   if (!card) return;
-  const dir = (data.direction || 'HOLD').toLowerCase();
+  const dir  = (data.direction || 'HOLD').toLowerCase();
   const conf = data.confidence || 50;
-  const ind = data.indicators || {};
-  const lev = data.leverage;
-  const tpsl = data.tpsl;
-  const ch = data.change24h;
+  const ind  = data.indicators || {};
+  const ch   = data.change24h;
   card.className = 'coin-card ' + dir;
-  const chClass = ch > 0 ? 'up' : ch < 0 ? 'dn' : 'fl';
-  const rsiC = ind.rsi < 32 ? 'bull' : ind.rsi > 68 ? 'bear' : 'neut';
+  const chClass  = ch > 0 ? 'up' : ch < 0 ? 'dn' : 'fl';
+  const rsiC  = ind.rsi < 32 ? 'bull' : ind.rsi > 68 ? 'bear' : 'neut';
   const macdC = ind.macd > 0 ? 'bull' : ind.macd < 0 ? 'bear' : 'neut';
-  const bbC = ind.bbPos < 20 ? 'bull' : ind.bbPos > 80 ? 'bear' : 'neut';
-  const skC = ind.stoch ? (ind.stoch.k < 20 ? 'bull' : ind.stoch.k > 80 ? 'bear' : 'neut') : 'neut';
+  const bbC   = ind.bbPos < 20 ? 'bull' : ind.bbPos > 80 ? 'bear' : 'neut';
+  const skC   = ind.stoch ? (ind.stoch.k < 20 ? 'bull' : ind.stoch.k > 80 ? 'bear' : 'neut') : 'neut';
   card.innerHTML = `
     <div class="ch"><div><div class="cn">${symbol.replace('/USDT','')}</div><div class="ctf">PERP</div></div><span class="badge ${dir}">${data.direction||'HOLD'}</span></div>
     <div class="cprice">${fmtPrice(data.price)}</div>
@@ -292,9 +428,9 @@ function updateCard(symbol, data) {
     <div class="conf-row"><span>Güven</span><strong>${conf}/100</strong></div>
     <div class="cbar"><div class="cfill ${dir}" style="width:${conf}%"></div></div>
     <div class="futures-row">
-      <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">${lev ? lev+'x' : '—'}</div></div>
-      <div class="fi"><div class="fi-name">TP</div><div class="fi-val tp">${tpsl ? fmtPrice(tpsl.tp) : '—'}</div></div>
-      <div class="fi"><div class="fi-name">SL</div><div class="fi-val sl">${tpsl ? fmtPrice(tpsl.sl) : '—'}</div></div>
+      <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">${data.leverage ? data.leverage+'x' : '—'}</div></div>
+      <div class="fi"><div class="fi-name">TP</div><div class="fi-val tp">${data.tpsl ? fmtPrice(data.tpsl.tp) : '—'}</div></div>
+      <div class="fi"><div class="fi-name">SL</div><div class="fi-val sl">${data.tpsl ? fmtPrice(data.tpsl.sl) : '—'}</div></div>
     </div>
     <div class="inds">
       <div class="ind"><div class="iname">RSI</div><div class="ival ${rsiC}">${ind.rsi != null ? ind.rsi.toFixed(1) : '—'}</div></div>
@@ -310,40 +446,39 @@ async function loadCards() {
     const batch = SYMBOLS.slice(i, i + 5);
     await Promise.allSettled(batch.map(async sym => {
       try {
-        const res = await fetch('/api/analyze/' + encodeURIComponent(sym));
+        const res  = await fetch('/api/analyze/' + encodeURIComponent(sym));
         const json = await res.json();
         if (json.ok) { updateCard(sym, json.data); results.push(json.data); }
       } catch {}
     }));
   }
-  updateStats(results);
+  updateMarketStats(results);
 }
 
-function updateStats(results) {
+function updateMarketStats(results) {
   const longs  = results.filter(r => r.direction === 'LONG').length;
   const shorts = results.filter(r => r.direction === 'SHORT').length;
   const fg     = results[0]?.indicators?.fearGreed;
-  const fgLbl  = fg < 25 ? 'Aşırı Korku' : fg > 75 ? 'Açgözlülük' : fg < 45 ? 'Korku' : fg > 55 ? 'Açgözlü' : 'Nötr';
-  const fgCol  = fg < 35 ? 'g' : fg > 65 ? 'r' : 'y';
+  const fgLbl  = !fg ? '—' : fg < 25 ? 'Aşırı Korku' : fg > 75 ? 'Açgözlülük' : fg < 45 ? 'Korku' : fg > 55 ? 'Açgözlü' : 'Nötr';
+  const fgCls  = !fg ? 'b' : fg < 35 ? 'g' : fg > 65 ? 'r' : 'y';
   document.getElementById('s-ls').textContent = longs + 'L / ' + shorts + 'S';
-  document.getElementById('s-fg').textContent = fg != null ? fg : '—';
-  document.getElementById('s-fg').className = 'stat-val ' + fgCol;
+  const fgEl = document.getElementById('s-fg');
+  fgEl.textContent = fg != null ? fg : '—';
+  fgEl.className = 'stat-val ' + fgCls;
   document.getElementById('s-fg-lbl').textContent = fgLbl;
 }
 
-// ─── SIGNAL TABLE ─────────────────────────────────────────────────────────────
+// ── SIGNAL TABLE ───────────────────────────────────────────────────────────
 async function loadSignals(page = 0) {
   currentPage = page;
-  const offset = page * PAGE_SIZE;
   try {
-    const res  = await fetch(`/api/signals?limit=${PAGE_SIZE}&offset=${offset}`);
+    const res  = await fetch(`/api/signals?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`);
     const json = await res.json();
     if (!json.ok) return;
     totalSignals = json.total;
     renderTable(json.data);
     renderPagination();
-    updateSummaryStats(json.data);
-    renderCharts(json.data);
+    updateSignalStats();
   } catch {}
 }
 
@@ -351,21 +486,26 @@ function renderTable(rows) {
   document.getElementById('tbl-info').textContent = `${totalSignals} kayıt`;
   const tbody = document.getElementById('sig-tbody');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td class="erow" colspan="10">Henüz sinyal yok — ilk 5 dakikalık mum kapanışında gelecek</td></tr>';
+    tbody.innerHTML = '<tr><td class="erow" colspan="11">Henüz sinyal yok</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(r => {
-    const dir = (r.direction||'').toLowerCase();
+    const dir     = (r.direction||'').toLowerCase();
+    const isOpen  = !r.outcome || r.outcome === 'OPEN';
+    const livePnl = isOpen ? getLivePnl(r.signal_id) : null;
+    const livePrice = isOpen ? getLivePrice(r.signal_id) : null;
+    const pnl     = livePnl != null ? livePnl : r.pnl_pct;
     return `<tr>
-      <td class="sid">#${r.signal_id || r.id}</td>
+      <td class="sid">#${r.signal_id}</td>
       <td style="font-weight:600">${r.symbol}</td>
       <td class="t${dir}">${r.direction}</td>
-      <td style="color:var(--accent)">${fmtPrice(r.entry_price || r.price)}</td>
+      <td style="color:var(--accent)">${fmtPrice(r.entry_price)}</td>
       <td style="color:var(--red)">${fmtPrice(r.sl_price)}</td>
       <td style="color:var(--green)">${fmtPrice(r.tp_price)}</td>
       <td style="color:var(--accent)">${r.leverage ? r.leverage+'x' : '—'}</td>
-      <td>${outcomeHTML(r.outcome, r.pnl_pct)}</td>
-      <td>${pnlHTML(r.pnl_pct)}</td>
+      <td>${outcomeHTML(r.outcome)}</td>
+      <td>${pnlHTML(pnl, isOpen && livePnl != null)}</td>
+      <td style="color:var(--accent);font-size:10px">${livePrice ? fmtPrice(livePrice) + ' ●' : (r.close_price ? fmtPrice(r.close_price) : '—')}</td>
       <td class="tm">${fmtTime(r.created_at)}</td>
     </tr>`;
   }).join('');
@@ -374,7 +514,7 @@ function renderTable(rows) {
 function renderPagination() {
   const totalPages = Math.ceil(totalSignals / PAGE_SIZE);
   document.getElementById('pg-info').textContent =
-    `Sayfa ${currentPage+1} / ${totalPages} (toplam ${totalSignals} kayıt)`;
+    `Sayfa ${currentPage+1} / ${Math.max(1,totalPages)} (${totalSignals} kayıt)`;
   const btns = document.getElementById('pg-btns');
   btns.innerHTML = '';
   const addBtn = (label, page, disabled, active) => {
@@ -385,103 +525,86 @@ function renderPagination() {
     b.onclick = () => loadSignals(page);
     btns.appendChild(b);
   };
-  addBtn('‹ Önceki', currentPage - 1, currentPage === 0, false);
-  // Sayfa numaraları
+  addBtn('‹', currentPage-1, currentPage===0, false);
   for (let i = 0; i < totalPages; i++) {
-    if (totalPages > 7 && Math.abs(i - currentPage) > 2 && i !== 0 && i !== totalPages-1) continue;
-    addBtn(i+1, i, false, i === currentPage);
+    if (totalPages > 7 && Math.abs(i-currentPage) > 2 && i!==0 && i!==totalPages-1) continue;
+    addBtn(i+1, i, false, i===currentPage);
   }
-  addBtn('Sonraki ›', currentPage + 1, currentPage >= totalPages - 1, false);
+  addBtn('›', currentPage+1, currentPage>=totalPages-1, false);
 }
 
-function updateSummaryStats(rows) {
-  // Tüm sinyallerin özeti için ayrı endpoint yok, mevcut sayfadan hesapla
-  // Gerçek istatistik için tüm sinyalleri çek
-  fetch('/api/signals?limit=10000&offset=0').then(r => r.json()).then(json => {
+async function updateSignalStats() {
+  try {
+    const res  = await fetch('/api/signals?limit=5000&offset=0');
+    const json = await res.json();
     if (!json.ok) return;
-    const all = json.data;
+    const all    = json.data;
     const closed = all.filter(r => r.outcome && r.outcome !== 'OPEN');
     const wins   = all.filter(r => r.outcome === 'WIN');
     const losses = all.filter(r => r.outcome === 'LOSS');
-    const opens  = all.filter(r => !r.outcome || r.outcome === 'OPEN');
-    const wr     = closed.length ? Math.round(wins.length / closed.length * 100) : null;
-    const totalPnl = closed.reduce((s, r) => s + (parseFloat(r.pnl_pct) || 0), 0);
-
+    const wr     = closed.length ? Math.round(wins.length/closed.length*100) : null;
+    const totalPnl = closed.reduce((s,r) => s + (parseFloat(r.pnl_pct)||0), 0);
     document.getElementById('s-total').textContent = all.length;
-    document.getElementById('s-wr').textContent = wr != null ? wr + '%' : '—';
-    document.getElementById('s-wr').className = 'stat-val ' + (wr >= 50 ? 'g' : 'r');
+    const wrEl = document.getElementById('s-wr');
+    wrEl.textContent = wr != null ? wr + '%' : '—';
+    wrEl.className = 'stat-val ' + (wr >= 50 ? 'g' : 'r');
     document.getElementById('s-wr-sub').textContent = `${wins.length}W / ${losses.length}L`;
     const pnlEl = document.getElementById('s-pnl');
-    pnlEl.textContent = closed.length ? (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(1) + '%' : '—';
-    pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'g' : 'r');
-    document.getElementById('s-open').textContent = opens.length;
-
-    renderWLChart(wins.length, losses.length, opens.length);
-  }).catch(() => {});
+    pnlEl.textContent = closed.length ? (totalPnl>=0?'+':'') + totalPnl.toFixed(1) + '%' : '—';
+    pnlEl.className = 'stat-val ' + (totalPnl>=0 ? 'g' : 'r');
+    renderWLChart(wins.length, losses.length, all.filter(r=>!r.outcome||r.outcome==='OPEN').length);
+    renderConfChart(all.slice(0,30).reverse());
+  } catch {}
 }
 
-// ─── CHARTS ──────────────────────────────────────────────────────────────────
-function renderCharts(rows) {
-  const recent = rows.slice(0, 30).reverse();
-  const labels = recent.map(r => r.symbol.replace('/USDT',''));
-  const confs  = recent.map(r => r.confidence);
-  const colors = recent.map(r =>
-    r.direction === 'LONG' ? '#3fb950' : r.direction === 'SHORT' ? '#f85149' : '#d29922'
-  );
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+function renderConfChart(rows) {
+  const labels = rows.map(r => r.symbol.replace('/USDT',''));
+  const confs  = rows.map(r => r.confidence);
+  const colors = rows.map(r => r.direction==='LONG'?'#3fb950':r.direction==='SHORT'?'#f85149':'#d29922');
   if (confChart) confChart.destroy();
   confChart = new Chart(document.getElementById('conf-chart').getContext('2d'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data: confs, backgroundColor: colors, borderRadius: 3, borderSkipped: false }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#161b22', borderColor: '#21262d', borderWidth: 1,
-        titleColor: '#e6edf3', bodyColor: '#8b949e', callbacks: { label: c => `${c.raw}/100` } } },
-      scales: {
-        x: { ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 8 }, maxRotation: 45 }, grid: { color: '#21262d' } },
-        y: { min: 0, max: 100, ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 8 }, stepSize: 25 }, grid: { color: '#21262d' } }
-      }
-    }
+    type:'bar', data:{labels,datasets:[{data:confs,backgroundColor:colors,borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#161b22',borderColor:'#21262d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',
+        callbacks:{label:c=>`${c.raw}/100`}}},
+      scales:{x:{ticks:{color:'#8b949e',font:{family:'JetBrains Mono',size:8},maxRotation:45},grid:{color:'#21262d'}},
+        y:{min:0,max:100,ticks:{color:'#8b949e',font:{family:'JetBrains Mono',size:8},stepSize:25},grid:{color:'#21262d'}}}}
   });
 }
 
 function renderWLChart(wins, losses, opens) {
-  document.getElementById('wl-sub').textContent = `${wins + losses + opens} kapalı+açık`;
+  document.getElementById('wl-sub').textContent = `${wins+losses+opens} sinyal`;
   if (wlChart) wlChart.destroy();
   wlChart = new Chart(document.getElementById('wl-chart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: ['WIN ✅', 'LOSS ❌', 'Açık ⏳'],
-      datasets: [{ data: [wins, losses, opens],
-        backgroundColor: ['#3fb950', '#f85149', '#d29922'],
-        borderColor: '#0d1117', borderWidth: 3 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 10 }, padding: 12 } },
-        tooltip: { backgroundColor: '#161b22', borderColor: '#21262d', borderWidth: 1,
-          titleColor: '#e6edf3', bodyColor: '#8b949e' }
-      }
-    }
+    type:'doughnut',
+    data:{labels:['WIN ✅','LOSS ❌','Açık ⏳'],
+      datasets:[{data:[wins,losses,opens],backgroundColor:['#3fb950','#f85149','#d29922'],borderColor:'#0d1117',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#8b949e',font:{family:'JetBrains Mono',size:10},padding:12}},
+        tooltip:{backgroundColor:'#161b22',borderColor:'#21262d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e'}}}
   });
 }
 
-// ─── CSV EXPORT ──────────────────────────────────────────────────────────────
-function exportCSV() {
-  window.open('/api/signals/export', '_blank');
-}
+// ── CSV ─────────────────────────────────────────────────────────────────────
+function exportCSV() { window.open('/api/signals/export','_blank'); }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// ── INIT ────────────────────────────────────────────────────────────────────
 async function refreshAll() {
   document.getElementById('last-upd').textContent = 'Güncelleniyor...';
-  await Promise.all([loadCards(), loadSignals(currentPage)]);
+  await Promise.all([loadCards(), loadSignals(currentPage), loadLive()]);
   document.getElementById('last-upd').textContent =
-    new Date().toLocaleTimeString('tr-TR', { timeZone: 'Asia/Dubai' });
+    new Date().toLocaleTimeString('tr-TR',{timeZone:'Asia/Dubai'});
 }
 
 initGrid();
 refreshAll();
-setInterval(refreshAll, 3 * 60 * 1000);
+
+// Coin cards + sinyal tablosu → 3 dakikada bir
+setInterval(() => { loadCards(); loadSignals(currentPage); updateSignalStats(); }, 3 * 60 * 1000);
+
+// Canlı pozisyonlar → 30 saniyede bir
+setInterval(loadLive, 30_000);
 </script>
 </body>
 </html>
