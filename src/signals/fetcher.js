@@ -43,5 +43,15 @@ async function fetchFearGreed() {
     return 50;
   }
 }
+async function testBinance() {
+  try {
+    const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SANDUSDT');
+    const json = await res.json();
+    console.log('[Test] Binance erişim:', json);
+  } catch (err) {
+    console.error('[Test] Binance erişim HATASI:', err.message);
+  }
+}
+testBinance();
 
 module.exports = { fetchOHLCV, fetchTicker, fetchFearGreed };
