@@ -1,5 +1,6 @@
 // src/api/server.js
 const express = require('express');
+const path = require('path');
 const db = require('../db');
 const { analyzeSymbol } = require('../signals/runner');
 const { formatSignalMessage } = require('../telegram/bot');
@@ -7,6 +8,9 @@ const config = require('../config');
 
 const app = express();
 app.use(express.json());
+
+// Dashboard UI
+app.use(express.static(path.join(__dirname, '../../public')));
 
 // Health check — Railway bu endpoint'i kullanır
 app.get('/health', (req, res) => {
