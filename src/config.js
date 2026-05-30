@@ -8,7 +8,7 @@ module.exports = {
   },
 
   exchange: {
-    id: 'binance',
+    id: 'bybit',
     apiKey: process.env.BINANCE_API_KEY || '',
     secret: process.env.BINANCE_SECRET || '',
   },
