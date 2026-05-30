@@ -7,10 +7,10 @@ const pool = new Pool({
 });
 
 async function init() {
-  await pool.query(`DROP TABLE IF EXISTS signals;`);
   await pool.query(`
     CREATE SEQUENCE IF NOT EXISTS signals_seq START 1;
-    CREATE TABLE signals (
+
+    CREATE TABLE IF NOT EXISTS signals (
       id            INTEGER PRIMARY KEY DEFAULT nextval('signals_seq'),
       signal_id     VARCHAR(10) UNIQUE,
       symbol        VARCHAR(30) NOT NULL,
@@ -32,18 +32,17 @@ async function init() {
       sent          BOOLEAN DEFAULT FALSE,
       created_at    TIMESTAMPTZ DEFAULT NOW()
     );
-    CREATE INDEX idx_signals_created ON signals (created_at DESC);
-    CREATE INDEX idx_signals_outcome ON signals (outcome);
+
+    CREATE INDEX IF NOT EXISTS idx_signals_created ON signals (created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_signals_outcome ON signals (outcome);
   `);
-  console.log('[DB] Tables ready');
+  console.log('[DB] Tables ready — mevcut veriler korundu');
 }
 
 async function saveSignal(signal) {
-  // signal_id: 0000001 formatı
   const countRes = await pool.query(`SELECT COUNT(*) FROM signals`);
   const count = parseInt(countRes.rows[0].count) + 1;
   const signalId = count.toString().padStart(7, '0');
-
   const tpsl = signal.tpsl || {};
   const { rows } = await pool.query(
     `INSERT INTO signals
@@ -80,8 +79,7 @@ async function getOpenSignals() {
 
 async function closeSignal(id, outcome, closePrice, pnlPct) {
   await pool.query(
-    `UPDATE signals SET outcome=$1, close_price=$2, pnl_pct=$3, closed_at=NOW()
-     WHERE id=$4`,
+    `UPDATE signals SET outcome=$1, close_price=$2, pnl_pct=$3, closed_at=NOW() WHERE id=$4`,
     [outcome, closePrice, pnlPct, id]
   );
 }
@@ -105,7 +103,7 @@ async function getAllSignals() {
 }
 
 async function markSent(id) {
-  await pool.query(`UPDATE signals SET sent=TRUE WHERE id=$1`, [id]);
+  await pool.query(`UPDATE signals SET sent=TRUE WHERE id=$1`, [parseInt(id)]);
 }
 
 module.exports = {
