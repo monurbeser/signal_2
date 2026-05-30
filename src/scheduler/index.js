@@ -1,4 +1,4 @@
-// src/scheduler/index.js — Bybit Futures WebSocket (tick bazlı)
+// src/scheduler/index.js — Binance USDT-M Futures WebSocket
 const WebSocket = require('ws');
 const { analyzeSymbol } = require('../signals/runner');
 const { sendSignal } = require('../telegram/bot');
@@ -13,30 +13,21 @@ function isOnCooldown(symbol) {
   return (Date.now() - last) / 1000 / 60 < config.signal.cooldownMinutes;
 }
 
-// Bybit linear futures WS
-const BYBIT_WS_URL = 'wss://stream.bybit.com/v5/public/linear';
-
-// Futures sembol formatı: BTC/USDT → BTCUSDT
-function futuresSym(symbol) {
-  return symbol.replace('/', '');
+// Binance futures stream adı: btcusdt@kline_5m
+function streamName(symbol) {
+  return symbol.replace('/', '').toLowerCase() + '@kline_' + config.timeframe;
 }
 
-// Bybit kline topic: kline.5.BTCUSDT
-function topicName(symbol) {
-  return `kline.${config.timeframe.replace('m','')}.${futuresSym(symbol)}`;
+function buildStreamUrl() {
+  const streams = config.symbols.map(streamName).join('/');
+  return `wss://fstream.binance.com/stream?streams=${streams}`;
 }
 
-let ws = null;
-let reconnectTimer = null;
-let reconnectDelay = 3000;
-let pingInterval = null;
+let ws = null, reconnectTimer = null, reconnectDelay = 3000, pingInterval = null;
 
 async function handleKlineClose(symbol) {
   console.log(`[WS] ▶ ${symbol} mum kapandı`);
-  if (isOnCooldown(symbol)) {
-    console.log(`  ⏸ cooldown`);
-    return;
-  }
+  if (isOnCooldown(symbol)) { console.log(`  ⏸ cooldown`); return; }
 
   let signal;
   try {
@@ -47,63 +38,47 @@ async function handleKlineClose(symbol) {
   }
 
   const { direction, confidence, leverage } = signal;
-  const levStr = leverage ? ` ${leverage}x` : '';
-  console.log(`  → ${direction} ${confidence}/100${levStr}`);
+  console.log(`  → ${direction} ${confidence}/100${leverage ? ' ' + leverage + 'x' : ''}`);
 
   if (direction === 'HOLD') return;
   if (confidence < config.signal.minConfidence) return;
 
-  let signalId;
-  try { signalId = await db.saveSignal(signal); } catch {}
+  let saved;
+  try { saved = await db.saveSignal(signal); } catch (err) {
+    console.error(`  ✗ DB kayıt hatası: ${err.message}`);
+  }
 
   const sent = await sendSignal(signal);
   if (sent) {
     lastSignalTime.set(symbol, Date.now());
-    if (signalId) db.markSent(signalId).catch(() => {});
+    if (saved?.id) db.markSent(saved.id).catch(() => {});
   }
-}
-
-function subscribeAll() {
-  // Bybit 10 topic/mesaj limiti var — batch'le gönder
-  const topics = config.symbols.map(topicName);
-  const batchSize = 10;
-  for (let i = 0; i < topics.length; i += batchSize) {
-    ws.send(JSON.stringify({
-      op: 'subscribe',
-      args: topics.slice(i, i + batchSize),
-    }));
-  }
-  console.log(`[WS] ${topics.length} sembol subscribe edildi`);
 }
 
 function connect() {
-  console.log('[WS] Bybit Futures stream bağlanıyor...');
-  ws = new WebSocket(BYBIT_WS_URL);
+  const url = buildStreamUrl();
+  console.log('[WS] Binance Futures stream bağlanıyor...');
+  ws = new WebSocket(url);
 
   ws.on('open', () => {
-    console.log('[WS] ✓ Bybit Futures bağlandı');
+    console.log('[WS] ✓ Binance Futures bağlandı');
     reconnectDelay = 3000;
-    subscribeAll();
 
     if (pingInterval) clearInterval(pingInterval);
     pingInterval = setInterval(() => {
-      if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ op: 'ping' }));
-      }
-    }, 20_000);
+      if (ws?.readyState === WebSocket.OPEN) ws.ping();
+    }, 180_000);
   });
 
   ws.on('message', (raw) => {
     try {
-      const msg = JSON.parse(raw);
-      if (msg.op) return; // pong/sub response
+      const msg   = JSON.parse(raw);
+      const kline = msg?.data?.k;
+      if (!kline) return;
+      if (!kline.x) return; // x=true → mum kapandı
 
-      if (!msg.topic?.startsWith('kline.')) return;
-      const data = msg.data?.[0];
-      if (!data?.confirm) return; // confirm=true → mum kapandı
-
-      // "kline.5.BTCUSDT" → BTCUSDT → BTC/USDT
-      const rawSym = msg.topic.split('.')[2];
+      // BTCUSDT → BTC/USDT
+      const rawSym = kline.s;
       const symbol = config.symbols.find(s => s.replace('/', '') === rawSym);
       if (!symbol) return;
 
@@ -116,7 +91,7 @@ function connect() {
   ws.on('error', err => console.error('[WS] Hata:', err.message));
 
   ws.on('close', code => {
-    console.warn(`[WS] Kapandı (${code}) — ${reconnectDelay/1000}s sonra yeniden bağlanılıyor`);
+    console.warn(`[WS] Kapandı (${code}) — yeniden bağlanılıyor`);
     if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
     scheduleReconnect();
   });
@@ -132,7 +107,7 @@ function scheduleReconnect() {
 }
 
 function start() {
-  console.log(`[WS] Futures sinyal servisi başlatılıyor`);
+  console.log(`[WS] Binance Futures sinyal servisi başlatılıyor`);
   console.log(`     ${config.symbols.length} sembol | ${config.timeframe} | cooldown ${config.signal.cooldownMinutes}dk`);
   connect();
 }
