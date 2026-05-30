@@ -3,117 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CryptoSignal Futures Dashboard</title>
+<title>CryptoSignal Futures</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#090c10; --bg2:#0d1117; --bg3:#161b22; --border:#21262d;
-  --text:#e6edf3; --muted:#8b949e;
-  --green:#3fb950; --green-dim:#1a3a22;
-  --red:#f85149;   --red-dim:#3a1a1a;
-  --yellow:#d29922;--yellow-dim:#3a2e10;
-  --blue:#58a6ff;  --accent:#79c0ff;
-  --mono:'JetBrains Mono',monospace;
-  --display:'Syne',sans-serif;
-}
+:root{--bg:#090c10;--bg2:#0d1117;--bg3:#161b22;--border:#21262d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a22;--red:#f85149;--red-dim:#3a1a1a;--yellow:#d29922;--yellow-dim:#3a2e10;--blue:#58a6ff;--accent:#79c0ff;--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9999;}
 
-/* HEADER */
-header{border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:100;}
+header{border-bottom:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:100;}
 .logo{font-family:var(--display);font-size:16px;font-weight:800;letter-spacing:-.5px;}
 .logo span{color:var(--green);}
-.logo sub{font-size:9px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-left:4px;letter-spacing:.05em;}
-.hright{display:flex;align-items:center;gap:12px;}
+.logo sub{font-size:9px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-left:4px;}
+.hright{display:flex;align-items:center;gap:10px;}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .htext{color:var(--muted);font-size:10px;}
 .btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;transition:.15s;}
 .btn:hover{border-color:var(--blue);color:var(--blue);}
+.btn.green{border-color:var(--green-dim);color:var(--green);}
+.btn.green:hover{border-color:var(--green);background:var(--green-dim);}
 
-/* STATS BAR */
-.stats-bar{display:flex;gap:20px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;}
-.stat-item{display:flex;align-items:center;gap:6px;font-size:10px;}
-.stat-label{color:var(--muted);}
-.stat-val{font-weight:500;}
-.stat-val.long{color:var(--green);}
-.stat-val.short{color:var(--red);}
-.stat-val.hold{color:var(--yellow);}
+.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2);}
+.stat{flex:1;padding:10px 16px;border-right:1px solid var(--border);text-align:center;}
+.stat:last-child{border-right:none;}
+.stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.stat-val{font-size:18px;font-weight:700;font-family:var(--display);}
+.stat-val.g{color:var(--green);}
+.stat-val.r{color:var(--red);}
+.stat-val.y{color:var(--yellow);}
+.stat-val.b{color:var(--blue);}
+.stat-sub{font-size:9px;color:var(--muted);margin-top:2px;}
 
-/* MAIN */
-main{padding:16px 20px;max-width:1600px;margin:0 auto;}
+main{padding:14px 20px;max-width:1600px;margin:0 auto;}
 
-/* COIN GRID */
-.coins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;}
-
-.coin-card{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:12px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;cursor:default;}
+/* COIN CARDS */
+.coins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px;}
+.coin-card{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:11px;transition:border-color .2s,transform .15s;}
 .coin-card:hover{border-color:#30363d;transform:translateY(-1px);}
-.coin-card.long {border-top:2px solid var(--green);}
+.coin-card.long{border-top:2px solid var(--green);}
 .coin-card.short{border-top:2px solid var(--red);}
-.coin-card.hold {border-top:2px solid var(--border);}
-
-.ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
-.cn{font-family:var(--display);font-size:13px;font-weight:700;}
-.ctf{font-size:9px;color:var(--muted);margin-top:1px;}
-.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.04em;}
-.badge.long {background:var(--green-dim);color:var(--green);}
+.coin-card.hold{border-top:2px solid var(--border);}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;}
+.cn{font-family:var(--display);font-size:12px;font-weight:700;}
+.ctf{font-size:8px;color:var(--muted);margin-top:1px;}
+.badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;}
+.badge.long{background:var(--green-dim);color:var(--green);}
 .badge.short{background:var(--red-dim);color:var(--red);}
-.badge.hold {background:var(--bg3);color:var(--muted);}
-
-.cprice{font-size:18px;font-weight:500;margin-bottom:2px;}
-.cchange{font-size:10px;margin-bottom:10px;}
+.badge.hold{background:var(--bg3);color:var(--muted);}
+.cprice{font-size:15px;font-weight:500;margin-bottom:2px;}
+.cchange{font-size:9px;margin-bottom:8px;}
 .cchange.up{color:var(--green);}
 .cchange.dn{color:var(--red);}
 .cchange.fl{color:var(--muted);}
-
-.conf-row{display:flex;justify-content:space-between;margin-bottom:4px;}
-.conf-row span{font-size:9px;color:var(--muted);}
-.conf-row strong{font-size:9px;}
-.cbar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.conf-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+.conf-row span,.conf-row strong{font-size:8px;}
+.conf-row span{color:var(--muted);}
+.cbar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:8px;}
 .cfill{height:100%;border-radius:2px;transition:width .5s;}
 .cfill.long{background:var(--green);}
 .cfill.short{background:var(--red);}
 .cfill.hold{background:var(--border);}
-
-/* TP/SL/LEV row */
-.futures-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;}
-.fi{background:var(--bg3);border-radius:4px;padding:5px 6px;}
-.fi-name{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
-.fi-val{font-size:11px;font-weight:500;}
+.futures-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:6px;}
+.fi{background:var(--bg3);border-radius:3px;padding:4px 5px;}
+.fi-name{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+.fi-val{font-size:10px;font-weight:500;}
 .fi-val.lev{color:var(--accent);}
 .fi-val.tp{color:var(--green);}
 .fi-val.sl{color:var(--red);}
-
-/* Indicators */
-.inds{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-.ind{background:var(--bg3);border-radius:4px;padding:5px 6px;}
-.iname{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
-.ival{font-size:11px;font-weight:500;}
+.inds{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.ind{background:var(--bg3);border-radius:3px;padding:4px 5px;}
+.iname{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+.ival{font-size:10px;font-weight:500;}
 .ival.bull{color:var(--green);}
 .ival.bear{color:var(--red);}
 .ival.neut{color:var(--muted);}
 
-/* BOTTOM */
-.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:800px){.bottom-grid{grid-template-columns:1fr;}}
-.panel{background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
-.ph{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
-.ph span{font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;}
-.chart-wrap{padding:14px;height:220px;position:relative;}
-.sw{max-height:300px;overflow-y:auto;}
-.sw::-webkit-scrollbar{width:3px;}
-.sw::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-table{width:100%;border-collapse:collapse;}
-th{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);}
-td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:11px;}
+/* SIGNAL TABLE */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:14px;}
+.ph{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.ph-title{font-family:var(--display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.ph-right{display:flex;align-items:center;gap:8px;}
+.sw{overflow-x:auto;}
+.sw::-webkit-scrollbar{height:3px;}
+.sw::-webkit-scrollbar-thumb{background:var(--border);}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+th{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);white-space:nowrap;}
+td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;white-space:nowrap;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg3);}
+.sid{color:var(--muted);font-size:10px;font-family:var(--mono);}
 .tlong{color:var(--green);font-weight:700;}
 .tshort{color:var(--red);font-weight:700;}
 .tm{color:var(--muted);}
-.erow{text-align:center;color:var(--muted);padding:28px 12px !important;}
+.outcome-win{color:var(--green);}
+.outcome-loss{color:var(--red);}
+.outcome-open{color:var(--yellow);}
+.outcome-expired{color:var(--muted);}
+.pnl-pos{color:var(--green);font-weight:500;}
+.pnl-neg{color:var(--red);font-weight:500;}
+.erow{text-align:center;color:var(--muted);padding:32px!important;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.pg-info{font-size:10px;color:var(--muted);}
+.pg-btns{display:flex;gap:4px;}
+.pg-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:3px;cursor:pointer;transition:.15s;}
+.pg-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue);}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pg-btn.active{border-color:var(--accent);color:var(--accent);}
+
+/* CHART */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:800px){.bottom-grid{grid-template-columns:1fr;}}
+.chart-wrap{padding:14px;height:200px;}
 </style>
 </head>
 <body>
@@ -123,37 +127,67 @@ tr:hover td{background:var(--bg3);}
   <div class="hright">
     <div class="dot"></div>
     <span class="htext">LIVE</span>
-    <span class="htext" id="last-update">—</span>
+    <span class="htext" id="last-upd">—</span>
+    <button class="btn green" onclick="exportCSV()">⬇ CSV</button>
     <button class="btn" onclick="refreshAll()">↻ Yenile</button>
   </div>
 </header>
 
+<!-- STATS BAR -->
 <div class="stats-bar">
-  <div class="stat-item"><span class="stat-label">Toplam</span><span class="stat-val" id="st-total">—</span></div>
-  <div class="stat-item"><span class="stat-label">LONG</span><span class="stat-val long" id="st-long">—</span></div>
-  <div class="stat-item"><span class="stat-label">SHORT</span><span class="stat-val short" id="st-short">—</span></div>
-  <div class="stat-item"><span class="stat-label">HOLD</span><span class="stat-val hold" id="st-hold">—</span></div>
-  <div class="stat-item"><span class="stat-label">F&G</span><span class="stat-val" id="st-fg">—</span></div>
-  <div class="stat-item"><span class="stat-label">Güncellendi</span><span class="stat-val" id="st-time">—</span></div>
+  <div class="stat"><div class="stat-lbl">Toplam Sinyal</div><div class="stat-val b" id="s-total">—</div><div class="stat-sub">kayıt</div></div>
+  <div class="stat"><div class="stat-lbl">Win Rate</div><div class="stat-val g" id="s-wr">—</div><div class="stat-sub" id="s-wr-sub">—</div></div>
+  <div class="stat"><div class="stat-lbl">Toplam PnL</div><div class="stat-val" id="s-pnl">—</div><div class="stat-sub">kapalı sinyaller</div></div>
+  <div class="stat"><div class="stat-lbl">Açık</div><div class="stat-val y" id="s-open">—</div><div class="stat-sub">bekliyor</div></div>
+  <div class="stat"><div class="stat-lbl">LONG / SHORT</div><div class="stat-val" id="s-ls">—</div><div class="stat-sub">bugünkü sinyaller</div></div>
+  <div class="stat"><div class="stat-lbl">Fear & Greed</div><div class="stat-val" id="s-fg">—</div><div class="stat-sub" id="s-fg-lbl">—</div></div>
 </div>
 
 <main>
+  <!-- COIN CARDS -->
   <div class="coins-grid" id="coins-grid"></div>
+
+  <!-- SIGNAL TABLE -->
+  <div class="panel">
+    <div class="ph">
+      <div class="ph-title">Sinyal Geçmişi</div>
+      <div class="ph-right">
+        <span class="htext" id="tbl-info">—</span>
+        <button class="btn green" onclick="exportCSV()">⬇ CSV Export</button>
+      </div>
+    </div>
+    <div class="sw">
+      <table>
+        <thead><tr>
+          <th>Sinyal ID</th>
+          <th>Coin</th>
+          <th>Yön</th>
+          <th>Giriş Fiyatı</th>
+          <th>Stop Loss</th>
+          <th>Take Profit</th>
+          <th>Kaldıraç</th>
+          <th>Sonuç</th>
+          <th>Kar / Zarar</th>
+          <th>Tarih (GG/AA/YYYY SS:DD)</th>
+        </tr></thead>
+        <tbody id="sig-tbody"><tr><td class="erow" colspan="10">Yükleniyor...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="pg-info" id="pg-info">—</div>
+      <div class="pg-btns" id="pg-btns"></div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
   <div class="bottom-grid">
     <div class="panel">
-      <div class="ph">Güven Skoru Geçmişi<span id="chart-sub">son sinyaller</span></div>
+      <div class="ph"><div class="ph-title">Güven Skoru Geçmişi</div><span class="htext">son 30 sinyal</span></div>
       <div class="chart-wrap"><canvas id="conf-chart"></canvas></div>
     </div>
     <div class="panel">
-      <div class="ph">Sinyal Geçmişi<span id="sig-count">— kayıt</span></div>
-      <div class="sw">
-        <table>
-          <thead><tr>
-            <th>Sembol</th><th>Yön</th><th>Güven</th><th>Kaldıraç</th><th>Fiyat</th><th>TP</th><th>SL</th><th>Zaman</th>
-          </tr></thead>
-          <tbody id="sig-tbody"><tr><td class="erow" colspan="8">Yükleniyor...</td></tr></tbody>
-        </table>
-      </div>
+      <div class="ph"><div class="ph-title">Win / Loss Dağılımı</div><span class="htext" id="wl-sub">—</span></div>
+      <div class="chart-wrap"><canvas id="wl-chart"></canvas></div>
     </div>
   </div>
 </main>
@@ -172,8 +206,10 @@ const SYMBOLS = [
   'GALA/USDT','SAND/USDT','MANA/USDT','ENA/USDT','PENDLE/USDT',
 ];
 
-let confChart = null;
-const cardData = {};
+const PAGE_SIZE = 100;
+let currentPage = 0;
+let totalSignals = 0;
+let confChart = null, wlChart = null;
 
 function fmtPrice(p) {
   if (!p) return '—';
@@ -187,113 +223,89 @@ function fmtPrice(p) {
 
 function fmtTime(ts) {
   if (!ts) return '—';
-  return new Date(ts).toLocaleString('tr-TR', {
-    timeZone:'Asia/Dubai', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit'
-  });
+  const d = new Date(ts);
+  const pad = n => n.toString().padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function indClass(val, low, high) {
-  if (val == null) return 'neut';
-  return val < low ? 'bull' : val > high ? 'bear' : 'neut';
+function outcomeHTML(outcome, pnl) {
+  if (!outcome || outcome === 'OPEN') return '<span class="outcome-open">⏳ Açık</span>';
+  if (outcome === 'WIN')  return '✅';
+  if (outcome === 'LOSS') return '❌';
+  if (outcome === 'EXPIRED') return '<span class="outcome-expired">⏰ Süresi doldu</span>';
+  return outcome;
 }
 
-function buildCard(symbol) {
-  const div = document.createElement('div');
-  div.className = 'coin-card hold';
-  div.id = 'card-' + symbol.replace('/', '-');
-  div.innerHTML = `
-    <div class="ch">
-      <div><div class="cn">${symbol.replace('/USDT','')}</div><div class="ctf">USDT PERP • 5M</div></div>
-      <span class="badge hold">—</span>
-    </div>
-    <div class="cprice">$—</div>
-    <div class="cchange fl">Yükleniyor...</div>
-    <div class="conf-row"><span>Güven</span><strong>—</strong></div>
-    <div class="cbar"><div class="cfill hold" style="width:20%"></div></div>
-    <div class="futures-row">
-      <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">—</div></div>
-      <div class="fi"><div class="fi-name">TP</div><div class="fi-val tp">—</div></div>
-      <div class="fi"><div class="fi-name">SL</div><div class="fi-val sl">—</div></div>
-    </div>
-    <div class="inds">
-      <div class="ind"><div class="iname">RSI</div><div class="ival neut">—</div></div>
-      <div class="ind"><div class="iname">MACD</div><div class="ival neut">—</div></div>
-      <div class="ind"><div class="iname">BB</div><div class="ival neut">—</div></div>
-      <div class="ind"><div class="iname">StochK</div><div class="ival neut">—</div></div>
-    </div>`;
-  return div;
+function pnlHTML(pnl) {
+  if (pnl == null) return '<span class="tm">—</span>';
+  const cls = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+  return `<span class="${cls}">${pnl >= 0 ? '+' : ''}${pnl}%</span>`;
 }
 
+// ─── COIN CARDS ───────────────────────────────────────────────────────────────
 function initGrid() {
   const grid = document.getElementById('coins-grid');
   grid.innerHTML = '';
-  SYMBOLS.forEach(s => grid.appendChild(buildCard(s)));
+  SYMBOLS.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'coin-card hold';
+    div.id = 'card-' + s.replace('/', '-');
+    div.innerHTML = `
+      <div class="ch"><div><div class="cn">${s.replace('/USDT','')}</div><div class="ctf">PERP • 5M</div></div><span class="badge hold">—</span></div>
+      <div class="cprice">$—</div><div class="cchange fl">Yükleniyor...</div>
+      <div class="conf-row"><span>Güven</span><strong>—</strong></div>
+      <div class="cbar"><div class="cfill hold" style="width:15%"></div></div>
+      <div class="futures-row">
+        <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">—</div></div>
+        <div class="fi"><div class="fi-name">TP</div><div class="fi-val tp">—</div></div>
+        <div class="fi"><div class="fi-name">SL</div><div class="fi-val sl">—</div></div>
+      </div>
+      <div class="inds">
+        <div class="ind"><div class="iname">RSI</div><div class="ival neut">—</div></div>
+        <div class="ind"><div class="iname">MACD</div><div class="ival neut">—</div></div>
+        <div class="ind"><div class="iname">BB</div><div class="ival neut">—</div></div>
+        <div class="ind"><div class="iname">StochK</div><div class="ival neut">—</div></div>
+      </div>`;
+    grid.appendChild(div);
+  });
 }
 
 function updateCard(symbol, data) {
-  const id = 'card-' + symbol.replace('/', '-');
-  const card = document.getElementById(id);
+  const card = document.getElementById('card-' + symbol.replace('/', '-'));
   if (!card) return;
-  cardData[symbol] = data;
-
   const dir = (data.direction || 'HOLD').toLowerCase();
   const conf = data.confidence || 50;
   const ind = data.indicators || {};
   const lev = data.leverage;
   const tpsl = data.tpsl;
-
-  card.className = 'coin-card ' + dir;
-
   const ch = data.change24h;
+  card.className = 'coin-card ' + dir;
   const chClass = ch > 0 ? 'up' : ch < 0 ? 'dn' : 'fl';
-  const chStr = ch != null ? (ch >= 0 ? '+' : '') + parseFloat(ch).toFixed(2) + '% (24s)' : '—';
-
-  const rsiC = indClass(ind.rsi, 32, 68);
+  const rsiC = ind.rsi < 32 ? 'bull' : ind.rsi > 68 ? 'bear' : 'neut';
   const macdC = ind.macd > 0 ? 'bull' : ind.macd < 0 ? 'bear' : 'neut';
-  const bbC = indClass(ind.bbPos, 20, 80);
-  const skC = ind.stoch ? indClass(ind.stoch.k, 20, 80) : 'neut';
-
+  const bbC = ind.bbPos < 20 ? 'bull' : ind.bbPos > 80 ? 'bear' : 'neut';
+  const skC = ind.stoch ? (ind.stoch.k < 20 ? 'bull' : ind.stoch.k > 80 ? 'bear' : 'neut') : 'neut';
   card.innerHTML = `
-    <div class="ch">
-      <div><div class="cn">${symbol.replace('/USDT','')}</div><div class="ctf">PERP • ${fmtTime(data.timestamp)}</div></div>
-      <span class="badge ${dir}">${data.direction || 'HOLD'}</span>
-    </div>
+    <div class="ch"><div><div class="cn">${symbol.replace('/USDT','')}</div><div class="ctf">PERP</div></div><span class="badge ${dir}">${data.direction||'HOLD'}</span></div>
     <div class="cprice">${fmtPrice(data.price)}</div>
-    <div class="cchange ${chClass}">${chStr}</div>
+    <div class="cchange ${chClass}">${ch != null ? (ch>=0?'+':'')+parseFloat(ch).toFixed(2)+'%' : '—'} (24s)</div>
     <div class="conf-row"><span>Güven</span><strong>${conf}/100</strong></div>
     <div class="cbar"><div class="cfill ${dir}" style="width:${conf}%"></div></div>
     <div class="futures-row">
-      <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">${lev ? lev + 'x' : '—'}</div></div>
+      <div class="fi"><div class="fi-name">Kaldıraç</div><div class="fi-val lev">${lev ? lev+'x' : '—'}</div></div>
       <div class="fi"><div class="fi-name">TP</div><div class="fi-val tp">${tpsl ? fmtPrice(tpsl.tp) : '—'}</div></div>
       <div class="fi"><div class="fi-name">SL</div><div class="fi-val sl">${tpsl ? fmtPrice(tpsl.sl) : '—'}</div></div>
     </div>
     <div class="inds">
       <div class="ind"><div class="iname">RSI</div><div class="ival ${rsiC}">${ind.rsi != null ? ind.rsi.toFixed(1) : '—'}</div></div>
-      <div class="ind"><div class="iname">MACD</div><div class="ival ${macdC}">${ind.macd != null ? (ind.macd >= 0 ? '+' : '') + ind.macd.toFixed(4) : '—'}</div></div>
-      <div class="ind"><div class="iname">BB</div><div class="ival ${bbC}">${ind.bbPos != null ? ind.bbPos + '%' : '—'}</div></div>
+      <div class="ind"><div class="iname">MACD</div><div class="ival ${macdC}">${ind.macd != null ? (ind.macd>=0?'+':'')+ind.macd.toFixed(4) : '—'}</div></div>
+      <div class="ind"><div class="iname">BB</div><div class="ival ${bbC}">${ind.bbPos != null ? ind.bbPos+'%' : '—'}</div></div>
       <div class="ind"><div class="iname">StochK</div><div class="ival ${skC}">${ind.stoch ? ind.stoch.k.toFixed(1) : '—'}</div></div>
     </div>`;
 }
 
-function updateStats(results) {
-  const total = results.length;
-  const longs = results.filter(r => r.direction === 'LONG').length;
-  const shorts = results.filter(r => r.direction === 'SHORT').length;
-  const holds = results.filter(r => r.direction === 'HOLD').length;
-  const fg = results[0]?.indicators?.fearGreed;
-
-  document.getElementById('st-total').textContent = total;
-  document.getElementById('st-long').textContent = longs;
-  document.getElementById('st-short').textContent = shorts;
-  document.getElementById('st-hold').textContent = holds;
-  document.getElementById('st-fg').textContent = fg != null ? fg + ' (' + (fg < 25 ? 'Aşırı Korku' : fg > 75 ? 'Açgözlülük' : 'Nötr') + ')' : '—';
-  document.getElementById('st-time').textContent = new Date().toLocaleTimeString('tr-TR', { timeZone: 'Asia/Dubai' });
-}
-
 async function loadCards() {
   const results = [];
-  // 5'li batch — UI'yi bloklamadan yükle
   for (let i = 0; i < SYMBOLS.length; i += 5) {
     const batch = SYMBOLS.slice(i, i + 5);
     await Promise.allSettled(batch.map(async sym => {
@@ -307,73 +319,169 @@ async function loadCards() {
   updateStats(results);
 }
 
-async function loadSignals() {
+function updateStats(results) {
+  const longs  = results.filter(r => r.direction === 'LONG').length;
+  const shorts = results.filter(r => r.direction === 'SHORT').length;
+  const fg     = results[0]?.indicators?.fearGreed;
+  const fgLbl  = fg < 25 ? 'Aşırı Korku' : fg > 75 ? 'Açgözlülük' : fg < 45 ? 'Korku' : fg > 55 ? 'Açgözlü' : 'Nötr';
+  const fgCol  = fg < 35 ? 'g' : fg > 65 ? 'r' : 'y';
+  document.getElementById('s-ls').textContent = longs + 'L / ' + shorts + 'S';
+  document.getElementById('s-fg').textContent = fg != null ? fg : '—';
+  document.getElementById('s-fg').className = 'stat-val ' + fgCol;
+  document.getElementById('s-fg-lbl').textContent = fgLbl;
+}
+
+// ─── SIGNAL TABLE ─────────────────────────────────────────────────────────────
+async function loadSignals(page = 0) {
+  currentPage = page;
+  const offset = page * PAGE_SIZE;
   try {
-    const res = await fetch('/api/signals?limit=100');
+    const res  = await fetch(`/api/signals?limit=${PAGE_SIZE}&offset=${offset}`);
     const json = await res.json();
     if (!json.ok) return;
-    const rows = json.data;
-    document.getElementById('sig-count').textContent = rows.length + ' kayıt';
-
-    const tbody = document.getElementById('sig-tbody');
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td class="erow" colspan="8">Henüz sinyal yok</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = rows.map(r => {
-      const dir = (r.direction || '').toLowerCase();
-      return `<tr>
-        <td style="font-weight:500">${r.symbol}</td>
-        <td class="t${dir}">${r.direction}</td>
-        <td class="tm">${r.confidence}/100</td>
-        <td class="tm">${r.leverage ? r.leverage + 'x' : '—'}</td>
-        <td style="color:var(--accent);font-size:10px">${fmtPrice(r.price)}</td>
-        <td style="color:var(--green);font-size:10px">${r.tpsl ? fmtPrice(r.tpsl.tp) : '—'}</td>
-        <td style="color:var(--red);font-size:10px">${r.tpsl ? fmtPrice(r.tpsl.sl) : '—'}</td>
-        <td class="tm">${fmtTime(r.created_at)}</td>
-      </tr>`;
-    }).join('');
-
-    renderChart(rows);
+    totalSignals = json.total;
+    renderTable(json.data);
+    renderPagination();
+    updateSummaryStats(json.data);
+    renderCharts(json.data);
   } catch {}
 }
 
-function renderChart(rows) {
-  const recent = rows.slice(0, 30).reverse();
-  const labels = recent.map(r => r.symbol.replace('/USDT', '') + ' ' + (r.direction === 'LONG' ? '▲' : '▼'));
-  const confs = recent.map(r => r.confidence);
-  const colors = recent.map(r => r.direction === 'LONG' ? '#3fb950' : r.direction === 'SHORT' ? '#f85149' : '#d29922');
+function renderTable(rows) {
+  document.getElementById('tbl-info').textContent = `${totalSignals} kayıt`;
+  const tbody = document.getElementById('sig-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td class="erow" colspan="10">Henüz sinyal yok — ilk 5 dakikalık mum kapanışında gelecek</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const dir = (r.direction||'').toLowerCase();
+    return `<tr>
+      <td class="sid">#${r.signal_id || r.id}</td>
+      <td style="font-weight:600">${r.symbol}</td>
+      <td class="t${dir}">${r.direction}</td>
+      <td style="color:var(--accent)">${fmtPrice(r.entry_price || r.price)}</td>
+      <td style="color:var(--red)">${fmtPrice(r.sl_price)}</td>
+      <td style="color:var(--green)">${fmtPrice(r.tp_price)}</td>
+      <td style="color:var(--accent)">${r.leverage ? r.leverage+'x' : '—'}</td>
+      <td>${outcomeHTML(r.outcome, r.pnl_pct)}</td>
+      <td>${pnlHTML(r.pnl_pct)}</td>
+      <td class="tm">${fmtTime(r.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
 
+function renderPagination() {
+  const totalPages = Math.ceil(totalSignals / PAGE_SIZE);
+  document.getElementById('pg-info').textContent =
+    `Sayfa ${currentPage+1} / ${totalPages} (toplam ${totalSignals} kayıt)`;
+  const btns = document.getElementById('pg-btns');
+  btns.innerHTML = '';
+  const addBtn = (label, page, disabled, active) => {
+    const b = document.createElement('button');
+    b.className = 'pg-btn' + (active ? ' active' : '');
+    b.textContent = label;
+    b.disabled = disabled;
+    b.onclick = () => loadSignals(page);
+    btns.appendChild(b);
+  };
+  addBtn('‹ Önceki', currentPage - 1, currentPage === 0, false);
+  // Sayfa numaraları
+  for (let i = 0; i < totalPages; i++) {
+    if (totalPages > 7 && Math.abs(i - currentPage) > 2 && i !== 0 && i !== totalPages-1) continue;
+    addBtn(i+1, i, false, i === currentPage);
+  }
+  addBtn('Sonraki ›', currentPage + 1, currentPage >= totalPages - 1, false);
+}
+
+function updateSummaryStats(rows) {
+  // Tüm sinyallerin özeti için ayrı endpoint yok, mevcut sayfadan hesapla
+  // Gerçek istatistik için tüm sinyalleri çek
+  fetch('/api/signals?limit=10000&offset=0').then(r => r.json()).then(json => {
+    if (!json.ok) return;
+    const all = json.data;
+    const closed = all.filter(r => r.outcome && r.outcome !== 'OPEN');
+    const wins   = all.filter(r => r.outcome === 'WIN');
+    const losses = all.filter(r => r.outcome === 'LOSS');
+    const opens  = all.filter(r => !r.outcome || r.outcome === 'OPEN');
+    const wr     = closed.length ? Math.round(wins.length / closed.length * 100) : null;
+    const totalPnl = closed.reduce((s, r) => s + (parseFloat(r.pnl_pct) || 0), 0);
+
+    document.getElementById('s-total').textContent = all.length;
+    document.getElementById('s-wr').textContent = wr != null ? wr + '%' : '—';
+    document.getElementById('s-wr').className = 'stat-val ' + (wr >= 50 ? 'g' : 'r');
+    document.getElementById('s-wr-sub').textContent = `${wins.length}W / ${losses.length}L`;
+    const pnlEl = document.getElementById('s-pnl');
+    pnlEl.textContent = closed.length ? (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(1) + '%' : '—';
+    pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'g' : 'r');
+    document.getElementById('s-open').textContent = opens.length;
+
+    renderWLChart(wins.length, losses.length, opens.length);
+  }).catch(() => {});
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+function renderCharts(rows) {
+  const recent = rows.slice(0, 30).reverse();
+  const labels = recent.map(r => r.symbol.replace('/USDT',''));
+  const confs  = recent.map(r => r.confidence);
+  const colors = recent.map(r =>
+    r.direction === 'LONG' ? '#3fb950' : r.direction === 'SHORT' ? '#f85149' : '#d29922'
+  );
   if (confChart) confChart.destroy();
-  const ctx = document.getElementById('conf-chart').getContext('2d');
-  confChart = new Chart(ctx, {
+  confChart = new Chart(document.getElementById('conf-chart').getContext('2d'), {
     type: 'bar',
     data: { labels, datasets: [{ data: confs, backgroundColor: colors, borderRadius: 3, borderSkipped: false }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        backgroundColor: '#161b22', borderColor: '#21262d', borderWidth: 1,
-        titleColor: '#e6edf3', bodyColor: '#8b949e',
-        callbacks: { label: ctx => `Güven: ${ctx.raw}/100` }
-      }},
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#161b22', borderColor: '#21262d', borderWidth: 1,
+        titleColor: '#e6edf3', bodyColor: '#8b949e', callbacks: { label: c => `${c.raw}/100` } } },
       scales: {
-        x: { ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 9 }, maxRotation: 45 }, grid: { color: '#21262d' } },
-        y: { min: 0, max: 100, ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 9 }, stepSize: 25 }, grid: { color: '#21262d' } }
+        x: { ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 8 }, maxRotation: 45 }, grid: { color: '#21262d' } },
+        y: { min: 0, max: 100, ticks: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 8 }, stepSize: 25 }, grid: { color: '#21262d' } }
       }
     }
   });
 }
 
+function renderWLChart(wins, losses, opens) {
+  document.getElementById('wl-sub').textContent = `${wins + losses + opens} kapalı+açık`;
+  if (wlChart) wlChart.destroy();
+  wlChart = new Chart(document.getElementById('wl-chart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['WIN ✅', 'LOSS ❌', 'Açık ⏳'],
+      datasets: [{ data: [wins, losses, opens],
+        backgroundColor: ['#3fb950', '#f85149', '#d29922'],
+        borderColor: '#0d1117', borderWidth: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#8b949e', font: { family: 'JetBrains Mono', size: 10 }, padding: 12 } },
+        tooltip: { backgroundColor: '#161b22', borderColor: '#21262d', borderWidth: 1,
+          titleColor: '#e6edf3', bodyColor: '#8b949e' }
+      }
+    }
+  });
+}
+
+// ─── CSV EXPORT ──────────────────────────────────────────────────────────────
+function exportCSV() {
+  window.open('/api/signals/export', '_blank');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 async function refreshAll() {
-  document.getElementById('last-update').textContent = 'Güncelleniyor...';
-  await Promise.all([loadCards(), loadSignals()]);
-  document.getElementById('last-update').textContent = new Date().toLocaleTimeString('tr-TR', { timeZone: 'Asia/Dubai' });
+  document.getElementById('last-upd').textContent = 'Güncelleniyor...';
+  await Promise.all([loadCards(), loadSignals(currentPage)]);
+  document.getElementById('last-upd').textContent =
+    new Date().toLocaleTimeString('tr-TR', { timeZone: 'Asia/Dubai' });
 }
 
 initGrid();
 refreshAll();
-setInterval(refreshAll, 3 * 60 * 1000); // 3 dakikada bir auto-refresh
+setInterval(refreshAll, 3 * 60 * 1000);
 </script>
 </body>
 </html>
