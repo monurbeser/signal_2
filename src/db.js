@@ -7,8 +7,10 @@ const pool = new Pool({
 });
 
 async function init() {
+  // Eski tabloyu düşür, yeni şemayla yeniden oluştur
+  await pool.query(`DROP TABLE IF EXISTS signals;`);
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS signals (
+    CREATE TABLE signals (
       id          SERIAL PRIMARY KEY,
       symbol      VARCHAR(30) NOT NULL,
       direction   VARCHAR(10) NOT NULL,
@@ -24,9 +26,9 @@ async function init() {
       sent        BOOLEAN DEFAULT FALSE,
       created_at  TIMESTAMPTZ DEFAULT NOW()
     );
-    CREATE INDEX IF NOT EXISTS idx_signals_symbol_created ON signals (symbol, created_at DESC);
+    CREATE INDEX idx_signals_symbol_created ON signals (symbol, created_at DESC);
   `);
-  console.log('[DB] Tables ready');
+  console.log('[DB] Tables ready (fresh)');
 }
 
 async function saveSignal(signal) {
