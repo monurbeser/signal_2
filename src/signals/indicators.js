@@ -30,11 +30,11 @@ function calcBBPosition(candles, period = 20, stdDev = 2) {
 }
 
 function calcVolumeChange(candles, lookback = 20) {
-  if (candles.length < lookback + 1) return 0;
-  const recent = candles.slice(-lookback - 1);
-  const avgVol = recent.slice(0, lookback).reduce((s, c) => s + c.volume, 0) / lookback;
-  const lastVol = recent[recent.length - 1].volume;
-  if (avgVol === 0) return 0;
+  if (candles.length < lookback + 2) return 0;
+  const slice = candles.slice(-(lookback + 2), -1);
+  const avgVol = slice.slice(0, lookback).reduce((s, c) => s + c.volume, 0) / lookback;
+  const lastVol = slice[slice.length - 1].volume;
+  if (avgVol === 0 || lastVol === 0) return 0;
   return Math.round(((lastVol - avgVol) / avgVol) * 100);
 }
 
