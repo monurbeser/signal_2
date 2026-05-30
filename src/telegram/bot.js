@@ -1,9 +1,8 @@
-// src/telegram/bot.js
+// src/telegram/bot.js — Futures signal message
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('../config');
 
 let bot;
-
 function getBot() {
   if (!bot && config.telegram.token) {
     bot = new TelegramBot(config.telegram.token, { polling: false });
@@ -11,75 +10,71 @@ function getBot() {
   return bot;
 }
 
-/**
- * Sinyal mesajı formatlar
- */
-function formatSignalMessage(signal) {
-  const { symbol, direction, confidence, price, change24h, indicators, reasons } = signal;
+function fmtPrice(p, symbol) {
+  if (!p) return '—';
+  // Küçük coinler için daha fazla ondalık
+  const decimals = p < 0.01 ? 6 : p < 1 ? 4 : p < 100 ? 3 : 2;
+  return '$' + parseFloat(p).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
 
-  const dirEmoji = direction === 'BUY' ? '🟢' : direction === 'SELL' ? '🔴' : '🟡';
+function formatSignalMessage(signal) {
+  const { symbol, direction, confidence, price, change24h, indicators, reasons, leverage, tpsl } = signal;
+
+  const dirEmoji = direction === 'LONG' ? '🟢' : '🔴';
+  const dirLabel = direction === 'LONG' ? 'LONG (AL)' : 'SHORT (SAT)';
   const confBar  = buildConfBar(confidence);
-  const priceStr = price < 1 ? price.toFixed(4) : price.toLocaleString('en-US', { maximumFractionDigits: 2 });
-  const changeStr = change24h !== null
-    ? ` (${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%)`
+  const priceStr = fmtPrice(price, symbol);
+  const changeStr = change24h != null
+    ? ` (${change24h >= 0 ? '+' : ''}${parseFloat(change24h).toFixed(2)}%)`
     : '';
 
   const lines = [
-    `${dirEmoji} *${direction} SİNYALİ — ${symbol}*`,
+    `${dirEmoji} *FUTURES ${dirLabel} — ${symbol}*`,
     ``,
-    `💰 Fiyat: *$${priceStr}*${changeStr}`,
-    `⏱ Timeframe: ${config.timeframe.toUpperCase()}`,
-    ``,
-    `📊 *Güven Skoru: ${confidence}/100*`,
+    `💰 Fiyat: *${priceStr}*${changeStr}`,
+    `⏱ ${config.timeframe.toUpperCase()} | 🎯 Güven: *${confidence}/100*`,
     confBar,
-    ``,
-    `📈 *İndikatörler*`,
-    ...reasons.map(r => `  • ${r}`),
-    ``,
-    `🕐 ${new Date().toLocaleString('tr-TR', { timeZone: 'Asia/Dubai' })}`,
   ];
+
+  if (leverage && tpsl) {
+    lines.push(``, `⚡ *Kaldıraç: ${leverage}x*`);
+    lines.push(`✅ TP: *${fmtPrice(tpsl.tp)}*  (+${tpsl.tpPct}%)`);
+    lines.push(`🛑 SL: *${fmtPrice(tpsl.sl)}*  (-${tpsl.slPct}%)`);
+    lines.push(`💸 Tahmini Kazanç: *+${tpsl.estimatedPnlPct}%*`);
+  }
+
+  lines.push(``, `📊 *İndikatörler*`);
+  reasons.forEach(r => lines.push(`  • ${r}`));
+  lines.push(``, `🕐 ${new Date().toLocaleString('tr-TR', { timeZone: 'Asia/Dubai' })}`);
+  lines.push(`⚠️ _Bu bir sinyal aracıdır, yatırım tavsiyesi değildir._`);
 
   return lines.join('\n');
 }
 
 function buildConfBar(confidence) {
   const filled = Math.round(confidence / 10);
-  const empty  = 10 - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty) + ` ${confidence}%`;
+  return '█'.repeat(filled) + '░'.repeat(10 - filled) + ` ${confidence}%`;
 }
 
-/**
- * Sinyal gönderir
- */
 async function sendSignal(signal) {
   const b = getBot();
-  if (!b) {
-    console.warn('[Telegram] Bot token eksik — mesaj gönderilmedi');
-    return false;
-  }
-
-  const text = formatSignalMessage(signal);
+  if (!b) { console.warn('[TG] Token eksik'); return false; }
   try {
-    await b.sendMessage(config.telegram.chatId, text, { parse_mode: 'Markdown' });
-    console.log(`[Telegram] Gönderildi: ${signal.symbol} ${signal.direction} (${signal.confidence})`);
+    await b.sendMessage(config.telegram.chatId, formatSignalMessage(signal), { parse_mode: 'Markdown' });
+    console.log(`[TG] Gönderildi: ${signal.symbol} ${signal.direction} ${signal.confidence} | ${signal.leverage}x`);
     return true;
   } catch (err) {
-    console.error('[Telegram] Gönderme hatası:', err.message);
+    console.error('[TG] Hata:', err.message);
     return false;
   }
 }
 
-/**
- * Test mesajı — bot kurulumunu doğrular
- */
 async function sendTestMessage() {
   const b = getBot();
-  if (!b) throw new Error('TELEGRAM_BOT_TOKEN tanımlı değil');
-  await b.sendMessage(
-    config.telegram.chatId,
-    '✅ *CryptoSignal Bot aktif!*\n\nSinyaller her 15 dakikada bir kontrol edilecek.',
-    { parse_mode: 'Markdown' }
-  );
+  if (!b) throw new Error('Token yok');
+  await b.sendMessage(config.telegram.chatId,
+    '✅ *CryptoSignal Futures Bot aktif!*\n\n📊 49 coin izleniyor\n⚡ Futures sinyalleri: LONG/SHORT + Kaldıraç + TP/SL',
+    { parse_mode: 'Markdown' });
 }
 
 module.exports = { sendSignal, sendTestMessage, formatSignalMessage };

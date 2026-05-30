@@ -1,4 +1,4 @@
-// src/signals/fetcher.js
+// src/signals/fetcher.js — Bybit FUTURES (linear perpetual)
 const ccxt = require('ccxt');
 const config = require('../config');
 
@@ -10,7 +10,7 @@ function getExchange() {
       apiKey: config.exchange.apiKey,
       secret: config.exchange.secret,
       enableRateLimit: true,
-      options: { defaultType: 'spot' },
+      options: { defaultType: 'linear' }, // FUTURES (USDT perpetual)
     });
   }
   return exchange;
@@ -28,7 +28,7 @@ async function fetchTicker(symbol) {
   const ex = getExchange();
   const ticker = await ex.fetchTicker(symbol);
   return {
-    price: ticker.last,
+    price:     ticker.last,
     change24h: ticker.percentage,
     volume24h: ticker.quoteVolume,
   };
