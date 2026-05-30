@@ -30,12 +30,12 @@ module.exports = {
   timeframe: '5m',       // 5 dakikaya düşürdük — daha hızlı sinyal
   candleLimit: 120,
 
-  signal: {
-    longThreshold:  65,  // güven >= 65 → LONG
-    shortThreshold: 35,  // güven <= 35 → SHORT
-    minConfidence:  parseInt(process.env.SIGNAL_MIN_CONFIDENCE  || '65'),
-    cooldownMinutes:parseInt(process.env.SIGNAL_COOLDOWN_MINUTES || '60'),
-  },
+signal: {
+  longThreshold:  70,
+  shortThreshold: 30,
+  minConfidence:  parseInt(process.env.SIGNAL_MIN_CONFIDENCE  || '70'),
+  cooldownMinutes:parseInt(process.env.SIGNAL_COOLDOWN_MINUTES || '60'),
+},
 
   // Kaldıraç tablosu: güven skoru → kaldıraç
   leverage: [
